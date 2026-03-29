@@ -173,6 +173,7 @@ export function Footer() {
           style={{ padding: "24px 32px 0 32px" }}
         >
           <span
+            className="footer-wordmark"
             style={{
               fontFamily: "var(--font-sans)",
               fontWeight: 900,
@@ -184,7 +185,6 @@ export function Footer() {
               whiteSpace: "nowrap" as const,
               userSelect: "none",
               display: "block",
-              // Intentionally clips at bottom/right — creates the Flair-style drama
             }}
           >
             Adoniz

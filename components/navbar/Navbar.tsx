@@ -104,8 +104,8 @@ export function Navbar() {
           transition={{ duration: 0.55, ease: [0.32, 0, 0.1, 1] }}
           style={{ borderWidth: "1px", borderStyle: "solid", borderColor: "transparent" }}
         >
-          {/* Layer 1: Distortion (desktop only) */}
-          {!isMobile && (
+          {/* Layer 1: Distortion (desktop) / Blur (mobile) */}
+          {!isMobile ? (
             <motion.div
               animate={{ opacity: scrolled ? 1 : 0 }}
               transition={{ duration: 0.4, ease: [0.32, 0, 0.1, 1] }}
@@ -113,6 +113,16 @@ export function Navbar() {
                 position: "absolute", inset: 0, borderRadius: "inherit",
                 backdropFilter: "blur(3px)", filter: "url(#navbar-glass)",
                 isolation: "isolate", zIndex: 0,
+              }}
+            />
+          ) : (
+            <motion.div
+              animate={{ opacity: scrolled ? 1 : 0 }}
+              transition={{ duration: 0.4, ease: [0.32, 0, 0.1, 1] }}
+              style={{
+                position: "absolute", inset: 0, borderRadius: "inherit",
+                backdropFilter: "blur(20px) saturate(1.8)",
+                zIndex: 0,
               }}
             />
           )}
@@ -123,7 +133,7 @@ export function Navbar() {
             transition={{ duration: 0.4, ease: [0.32, 0, 0.1, 1] }}
             style={{
               position: "absolute", inset: 0, borderRadius: "inherit",
-              background: isMobile ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.55)",
+              background: "rgba(255,255,255,0.52)",
               zIndex: 1,
             }}
           />

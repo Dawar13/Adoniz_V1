@@ -309,7 +309,7 @@ function WhiteDashboard() {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <div
-          className="flex flex-col gap-0.5 py-2.5 px-2 flex-shrink-0"
+          className="dashboard-sidebar flex flex-col gap-0.5 py-2.5 px-2 flex-shrink-0"
           style={{ width: "130px", background: "var(--adoniz-pine)", borderRight: "1px solid rgba(255,255,255,0.07)" }}
         >
           <div className="flex items-center gap-1.5 px-2 py-1.5 mb-2">
@@ -384,7 +384,7 @@ function WhiteDashboard() {
           </div>
 
           {/* Stat cards */}
-          <div className="grid grid-cols-4 gap-1.5 flex-shrink-0">
+          <div className="dashboard-stats grid grid-cols-4 gap-1.5 flex-shrink-0">
             {stats.map((stat, idx) => (
               <div key={stat.label} className="rounded-lg p-2" style={{ background: "#fff", border: "1px solid var(--adoniz-distant-cloud)" }}>
                 <div className="flex items-center justify-between mb-0.5">
@@ -407,7 +407,7 @@ function WhiteDashboard() {
           </div>
 
           {/* Charts row */}
-          <div className="flex gap-2 flex-shrink-0" style={{ height: "68px" }}>
+          <div className="dashboard-charts flex gap-2 flex-shrink-0" style={{ height: "68px" }}>
             {/* Donut */}
             <div className="flex items-center gap-2 rounded-lg p-2 flex-1" style={{ border: "1px solid var(--adoniz-distant-cloud)" }}>
               <motion.div

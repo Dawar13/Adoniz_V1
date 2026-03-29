@@ -64,7 +64,7 @@ export function FiltersSection() {
       style={{ background: "var(--adoniz-snow)" }}
     >
       <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           {/* Left */}
           <div>
             <motion.div

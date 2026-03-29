@@ -320,9 +320,22 @@ html, body { overflow-x: clip; max-width: 100vw; }
 }
 
 /* ─── Device frames — scale down on mobile ───────────────────────────────── */
-@media (max-width: 639px) {
-  .device-laptop { width: 90vw !important; max-width: 360px !important; }
-  .device-phone  { width: 80px !important; right: -12px !important; bottom: 10px !important; }
+@media (max-width: 767px) {
+  .device-laptop { width: 94vw !important; max-width: 480px !important; }
+  .device-phone  { display: none !important; }
+}
+
+/* ─── Dashboard — simplified on mobile ──────────────────────────────────── */
+@media (max-width: 767px) {
+  .dashboard-sidebar { display: none !important; }
+  .dashboard-stats   { grid-template-columns: repeat(2, 1fr) !important; }
+  .dashboard-charts  { display: none !important; }
+}
+
+/* ─── Footer wordmark — scale on mobile ─────────────────────────────────── */
+@media (max-width: 767px) {
+  .footer-wordmark { font-size: clamp(5rem, 26vw, 9rem) !important; }
+  .footer-bottom-grid { min-height: auto !important; }
 }
 
 /* ─── Filters section — tighter on mobile ───────────────────────────────── */
