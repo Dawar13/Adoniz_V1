@@ -299,12 +299,26 @@ html, body { overflow-x: clip; max-width: 100vw; }
   }
 }
 
-/* ─── Footer top grid — 2-col tablet, 1-col mobile ──────────────────────── */
-@media (max-width: 479px) {
+/* ─── Footer top grid — 4-col matrix on all mobile sizes ────────────────── */
+@media (max-width: 767px) {
   .footer-top-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(4, 1fr) !important;
   }
-  .footer-top-grid > div { border-right: none !important; }
+  /* Remove all dividing borders — density over decoration */
+  .footer-top-grid > div {
+    border-right: none !important;
+    border-bottom: none !important;
+  }
+  .footer-link-col  {
+    padding: 12px 8px 12px 12px !important;
+    gap: 5px !important;
+  }
+  .footer-link-col > span {
+    font-size: 9px !important;
+    letter-spacing: 0.06em !important;
+  }
+  .footer-link-list { gap: 3px !important; }
+  .footer-link-list a { font-size: 11px !important; }
 }
 
 /* ─── Footer bottom grid — border cleanup ────────────────────────────────── */
@@ -340,11 +354,6 @@ html, body { overflow-x: clip; max-width: 100vw; }
 
 /* ─── Footer — dense + full-width wordmark on mobile ────────────────────── */
 @media (max-width: 767px) {
-  /* Tighter link columns */
-  .footer-link-col  { padding: 10px 14px !important; gap: 6px !important; }
-  .footer-link-list { gap: 4px !important; }
-  .footer-link-list a { font-size: 13px !important; }
-
   /* Hide left panel, let wordmark span full width */
   .footer-left-panel   { display: none !important; }
   .footer-bottom-grid  {
