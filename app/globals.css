@@ -307,11 +307,8 @@ html, body { overflow-x: clip; max-width: 100vw; }
   .footer-top-grid > div { border-right: none !important; }
 }
 
-/* ─── Footer bottom grid — single column on mobile ──────────────────────── */
+/* ─── Footer bottom grid — border cleanup ────────────────────────────────── */
 @media (max-width: 767px) {
-  .footer-bottom-grid {
-    grid-template-columns: 1fr !important;
-  }
   .footer-bottom-grid > div { border-right: none !important; }
 }
 
@@ -341,11 +338,33 @@ html, body { overflow-x: clip; max-width: 100vw; }
   }
 }
 
-/* ─── Footer — compact on mobile ────────────────────────────────────────── */
+/* ─── Footer — dense + full-width wordmark on mobile ────────────────────── */
 @media (max-width: 767px) {
-  .footer-wordmark    { font-size: clamp(4.5rem, 24vw, 8rem) !important; }
-  .footer-bottom-grid { min-height: auto !important; }
-  .footer-top-grid > div { padding: 14px 16px !important; }
+  /* Tighter link columns */
+  .footer-link-col  { padding: 10px 14px !important; gap: 6px !important; }
+  .footer-link-list { gap: 4px !important; }
+  .footer-link-list a { font-size: 13px !important; }
+
+  /* Hide left panel, let wordmark span full width */
+  .footer-left-panel   { display: none !important; }
+  .footer-bottom-grid  {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+  }
+
+  /* Wordmark: zero padding, fill full viewport width */
+  .footer-wordmark-cell {
+    padding: 10px 0 0 0 !important;
+    overflow: hidden !important;
+  }
+  .footer-wordmark {
+    font-size: 28vw !important;
+    letter-spacing: -0.03em !important;
+  }
+
+  /* Show mobile copyright, hide desktop ® */
+  .footer-reg         { display: none !important; }
+  .footer-mobile-copy { display: block !important; padding-left: 4px !important; }
 }
 
 /* ─── Filter pills — override global min-height, keep rectangular ────────── */

@@ -40,7 +40,7 @@ const COL_LINKS: { heading: string; items: { label: string; href: string }[] }[]
 
 function LinkCol({ heading, items }: { heading: string; items: { label: string; href: string }[] }) {
   return (
-    <div style={{ padding: "18px 22px" }} className="flex flex-col gap-2.5">
+    <div style={{ padding: "18px 22px" }} className="footer-link-col flex flex-col gap-2">
       <span
         style={{
           fontFamily: "var(--font-sans)",
@@ -53,7 +53,7 @@ function LinkCol({ heading, items }: { heading: string; items: { label: string; 
       >
         {heading}
       </span>
-      <ul className="flex flex-col gap-2 list-none m-0 p-0">
+      <ul className="footer-link-list flex flex-col gap-1.5 list-none m-0 p-0">
         {items.map((item) => (
           <li key={item.label}>
             <a
@@ -124,9 +124,9 @@ export function Footer() {
         className="footer-bottom-grid grid"
         style={{ gridTemplateColumns: "30% 1fr", minHeight: "160px" }}
       >
-        {/* Left — logo + copyright + decorative mark */}
+        {/* Left — logo + copyright + decorative mark (hidden on mobile) */}
         <div
-          className="flex flex-col justify-between p-5"
+          className="footer-left-panel flex flex-col justify-between p-5"
           style={{ borderRight: BORDER }}
         >
           {/* Logo + wordmark */}
@@ -169,7 +169,7 @@ export function Footer() {
 
         {/* Right — massive wordmark */}
         <div
-          className="relative overflow-hidden flex items-end"
+          className="footer-wordmark-cell relative overflow-hidden flex flex-col justify-end"
           style={{ padding: "16px 24px 0 24px" }}
         >
           <span
@@ -190,9 +190,9 @@ export function Footer() {
             Adoniz
           </span>
 
-          {/* ® in bottom right */}
+          {/* ® in bottom right — desktop */}
           <span
-            className="absolute bottom-4 right-5"
+            className="footer-reg absolute bottom-4 right-5"
             style={{
               fontFamily: "var(--font-sans)",
               fontSize: "11px",
@@ -200,6 +200,21 @@ export function Footer() {
             }}
           >
             ®
+          </span>
+
+          {/* Mobile-only copyright line */}
+          <span
+            className="footer-mobile-copy"
+            style={{
+              display: "none",
+              fontFamily: "var(--font-sans)",
+              fontSize: "11px",
+              color: "rgba(255,255,255,0.25)",
+              paddingBottom: "12px",
+              paddingTop: "6px",
+            }}
+          >
+            © 2026 Adoniz. All rights reserved.
           </span>
         </div>
       </div>
