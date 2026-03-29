@@ -180,7 +180,7 @@ export function Footer() {
               fontSize: "clamp(8rem, 18vw, 16rem)",
               lineHeight: 0.85,
               color: "#fff",
-              opacity: 0.15,
+              opacity: 0.28,
               letterSpacing: "-0.04em",
               whiteSpace: "nowrap" as const,
               userSelect: "none",
