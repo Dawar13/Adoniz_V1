@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { INTEGRATIONS_INNER, INTEGRATIONS_OUTER } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -26,13 +26,16 @@ function LogoNode({ name, file, x, y, progress, threshold, logoSize }: {
   const half = logoSize / 2;
   const pad = Math.round(logoSize * 0.173);
   const imgSize = Math.round(logoSize * 0.615);
+  const visible = progress > threshold;
   return (
-    <motion.div
+    <div
       className="absolute flex flex-col items-center gap-1"
-      style={{ left: "50%", top: "50%", x: x - half, y: y - half }}
-      initial={{ opacity: 0, scale: 0.3 }}
-      animate={progress > threshold ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.3 }}
-      transition={{ duration: 0.4, ease: EASE }}
+      style={{
+        left: "50%", top: "50%",
+        transform: `translate(${x - half}px, ${y - half}px) scale(${visible ? 1 : 0.3})`,
+        opacity: visible ? 1 : 0,
+        transition: "opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+      }}
     >
       <div className="flex items-center justify-center rounded-xl" style={{
         width: `${logoSize}px`, height: `${logoSize}px`,
@@ -45,7 +48,7 @@ function LogoNode({ name, file, x, y, progress, threshold, logoSize }: {
       <span style={{ fontSize: "9px", fontFamily: "var(--font-sans)", fontWeight: 500, color: "rgba(0,0,0,0.48)", whiteSpace: "nowrap" }}>
         {name}
       </span>
-    </motion.div>
+    </div>
   );
 }
 
@@ -81,19 +84,21 @@ function ConnectionLines({ innerPositions, outerPositions, ni, no, width, height
 }
 
 function OrbitalSystem({ progress, isMobile }: { progress: number; isMobile: boolean }) {
-  const WIDTH    = isMobile ? 360  : 860;
-  const HEIGHT   = isMobile ? 340  : 460;
-  const INNER_RX = isMobile ? 90   : 210;
-  const INNER_RY = isMobile ? 72   : 100;
-  const OUTER_RX = isMobile ? 160  : 410;
-  const OUTER_RY = isMobile ? 130  : 195;
-  const LOGO_SIZE = isMobile ? 36  : 52;
+  const WIDTH    = isMobile ? 360 : 860;
+  const HEIGHT   = isMobile ? 340 : 460;
+  const INNER_RX = isMobile ? 90  : 210;
+  const INNER_RY = isMobile ? 72  : 100;
+  const OUTER_RX = isMobile ? 160 : 410;
+  const OUTER_RY = isMobile ? 130 : 195;
+  const LOGO_SIZE = isMobile ? 36 : 52;
 
   const ni = INTEGRATIONS_INNER.length, no = INTEGRATIONS_OUTER.length;
   const innerPositions = INTEGRATIONS_INNER.map((_, i) =>
     ellipsePos((i / ni) * 360, INNER_RX, INNER_RY));
   const outerPositions = INTEGRATIONS_OUTER.map((_, i) =>
     ellipsePos((i / no) * 360 + 360 / (no * 2), OUTER_RX, OUTER_RY));
+
+  const capsuleVisible = progress > 0.02;
 
   return (
     <div className="relative mx-auto" style={{ width: WIDTH, height: HEIGHT, maxWidth: "100%" }}>
@@ -116,11 +121,11 @@ function OrbitalSystem({ progress, isMobile }: { progress: number; isMobile: boo
         })}
       </div>
       <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 10 }}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={progress > 0.02 ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
-          transition={{ duration: 0.6, ease: EASE }}
-        >
+        <div style={{
+          opacity: capsuleVisible ? 1 : 0,
+          transform: `scale(${capsuleVisible ? 1 : 0.5})`,
+          transition: "opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1)",
+        }}>
           <div className="flex items-center gap-2.5" style={{
             background: "var(--adoniz-pine)", borderRadius: "40px",
             padding: isMobile ? "10px 20px" : "12px 24px",
@@ -138,46 +143,61 @@ function OrbitalSystem({ progress, isMobile }: { progress: number; isMobile: boo
               Adoniz
             </span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
 }
 
 /* ─── Unified sticky-scroll section (desktop + mobile) ───────────────────── */
-function ConnectionsAnimation() {
+export function ConnectionsSection() {
   const outerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: outerRef, offset: ["start start", "end end"] });
-  const [liveProgress, setLiveProgress] = useState(0);
+  const [progress, setProgress] = useState(0);
   const isMobile = useIsMobile();
-  useMotionValueEvent(scrollYProgress, "change", setLiveProgress);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!outerRef.current) return;
+      const rect = outerRef.current.getBoundingClientRect();
+      const scrolledInto = -rect.top;
+      const scrollableDistance = rect.height - window.innerHeight;
+      const p = Math.max(0, Math.min(1, scrolledInto / scrollableDistance));
+      setProgress(p);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div ref={outerRef} id="integrations" style={{ height: "300vh", position: "relative" }}>
       <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden" }}>
         <div className="h-full flex flex-col overflow-hidden" style={{ background: "#FFFFFF", paddingTop: "56px", paddingBottom: "8px" }}>
           <div className="max-w-7xl mx-auto w-full px-4 flex flex-col flex-1">
+
+            {/* Header */}
             <div className="text-center mb-2 flex-shrink-0">
-              <motion.div
-                animate={liveProgress > 0.02 ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-                transition={{ duration: 0.5, ease: EASE }}
+              <div
                 className="inline-flex items-center rounded-full px-4 py-1.5 mb-4"
                 style={{
+                  opacity: progress > 0.02 ? 1 : 0,
+                  transform: `translateY(${progress > 0.02 ? 0 : 10}px)`,
+                  transition: "opacity 0.5s ease, transform 0.5s ease",
                   background: "var(--adoniz-mist)", border: "1px solid var(--adoniz-distant-cloud)",
                   fontSize: "11px", fontFamily: "var(--font-sans)", fontWeight: 600,
-                  textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--adoniz-forest)",
+                  textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--adoniz-forest)",
                 }}
               >
                 Integrations
-              </motion.div>
-              <motion.h2
-                animate={liveProgress > 0.02 ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-                transition={{ duration: 0.7, delay: 0.05, ease: EASE }}
+              </div>
+              <h2
                 style={{
+                  opacity: progress > 0.02 ? 1 : 0,
+                  transform: `translateY(${progress > 0.02 ? 0 : 16}px)`,
+                  transition: "opacity 0.7s ease 0.05s, transform 0.7s ease 0.05s",
                   fontFamily: "var(--font-serif)", fontWeight: 400,
-                  fontSize: isMobile
-                    ? "clamp(1.4rem, 5vw, 1.75rem)"
-                    : "clamp(1.9rem, 3.5vw, 2.75rem)",
+                  fontSize: isMobile ? "clamp(1.4rem, 5vw, 1.75rem)" : "clamp(1.9rem, 3.5vw, 2.75rem)",
                   letterSpacing: "-0.01em", lineHeight: 1.1,
                   color: "var(--adoniz-forest)", marginBottom: "8px",
                   padding: isMobile ? "0 20px" : undefined,
@@ -186,37 +206,42 @@ function ConnectionsAnimation() {
                 Connects to{" "}
                 <em style={{ fontStyle: "italic", color: "var(--adoniz-pine)" }}>everything</em>{" "}
                 your team already uses
-              </motion.h2>
-              <motion.p
-                animate={liveProgress > 0.04 ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: 0.5, ease: EASE }}
-                style={{ fontFamily: "var(--font-sans)", fontSize: "14px", color: "rgba(0,0,0,0.42)", maxWidth: "380px", margin: "0 auto", lineHeight: 1.6 }}
+              </h2>
+              <p
+                style={{
+                  opacity: progress > 0.04 ? 1 : 0,
+                  transition: "opacity 0.5s ease",
+                  fontFamily: "var(--font-sans)", fontSize: "14px",
+                  color: "rgba(0,0,0,0.42)", maxWidth: "380px", margin: "0 auto", lineHeight: 1.6,
+                }}
               >
                 Import from any source. More integrations added weekly.
-              </motion.p>
+              </p>
             </div>
+
+            {/* Orbital */}
             <div className="flex items-center justify-center flex-1">
-              <OrbitalSystem progress={liveProgress} isMobile={isMobile} />
+              <OrbitalSystem progress={progress} isMobile={isMobile} />
             </div>
-            <motion.p
-              animate={liveProgress > 0.88 ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ duration: 0.5 }}
+
+            {/* Footer link */}
+            <p
               className="text-center flex-shrink-0 mt-2"
-              style={{ fontSize: "13px", fontFamily: "var(--font-sans)", color: "rgba(0,0,0,0.3)" }}
+              style={{
+                opacity: progress > 0.88 ? 1 : 0,
+                transition: "opacity 0.5s ease",
+                fontSize: "13px", fontFamily: "var(--font-sans)", color: "rgba(0,0,0,0.3)",
+              }}
             >
               Don&apos;t see your tool?{" "}
               <a href="#" style={{ color: "var(--adoniz-forest)", textDecoration: "underline", textUnderlineOffset: "3px" }}>
                 Upload CSV or use the API →
               </a>
-            </motion.p>
+            </p>
+
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-/* ─── Entry point ─────────────────────────────────────────────────────────── */
-export function ConnectionsSection() {
-  return <ConnectionsAnimation />;
 }

@@ -221,7 +221,7 @@ body {
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Global: prevent horizontal overflow ────────────────────────────────── */
-html, body { overflow-x: hidden; max-width: 100vw; }
+html, body { overflow-x: clip; max-width: 100vw; }
 
 /* ─── Mobile touch targets ───────────────────────────────────────────────── */
 @media (max-width: 767px) {
