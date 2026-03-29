@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { INTEGRATIONS_INNER, INTEGRATIONS_OUTER, INTEGRATIONS_ALL } from "@/lib/constants";
+import { INTEGRATIONS_INNER, INTEGRATIONS_OUTER } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -19,26 +19,27 @@ const OUTER_STAGGER = [0, 4, 2, 5, 1, 3, 6];
 function innerLineStart(rank: number, n: number) { return 0.08 + (rank / (n - 1)) * 0.28; }
 function outerLineStart(rank: number, n: number) { return 0.50 + (rank / (n - 1)) * 0.26; }
 
-const LOGO_SIZE = 52;
-const LOGO_HALF = LOGO_SIZE / 2;
-
-function LogoNode({ name, file, x, y, progress, threshold }: {
-  name: string; file: string; x: number; y: number; progress: number; threshold: number;
+function LogoNode({ name, file, x, y, progress, threshold, logoSize }: {
+  name: string; file: string; x: number; y: number;
+  progress: number; threshold: number; logoSize: number;
 }) {
+  const half = logoSize / 2;
+  const pad = Math.round(logoSize * 0.173);
+  const imgSize = Math.round(logoSize * 0.615);
   return (
     <motion.div
       className="absolute flex flex-col items-center gap-1"
-      style={{ left: "50%", top: "50%", x: x - LOGO_HALF, y: y - LOGO_HALF }}
+      style={{ left: "50%", top: "50%", x: x - half, y: y - half }}
       initial={{ opacity: 0, scale: 0.3 }}
       animate={progress > threshold ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.3 }}
       transition={{ duration: 0.4, ease: EASE }}
     >
       <div className="flex items-center justify-center rounded-xl" style={{
-        width: `${LOGO_SIZE}px`, height: `${LOGO_SIZE}px`,
+        width: `${logoSize}px`, height: `${logoSize}px`,
         background: "#FFFFFF", border: "1px solid var(--adoniz-distant-cloud)",
-        boxShadow: "0 4px 16px rgba(0,61,49,0.08)", padding: "9px",
+        boxShadow: "0 4px 16px rgba(0,61,49,0.08)", padding: `${pad}px`,
       }}>
-        <Image src={`/logos/${file}`} alt={name} width={32} height={32}
+        <Image src={`/logos/${file}`} alt={name} width={imgSize} height={imgSize}
           style={{ objectFit: "contain", width: "100%", height: "auto" }} />
       </div>
       <span style={{ fontSize: "9px", fontFamily: "var(--font-sans)", fontWeight: 500, color: "rgba(0,0,0,0.48)", whiteSpace: "nowrap" }}>
@@ -79,13 +80,20 @@ function ConnectionLines({ innerPositions, outerPositions, ni, no, width, height
   );
 }
 
-function OrbitalSystem({ progress }: { progress: number }) {
-  const WIDTH = 860, HEIGHT = 460;
-  const INNER_RX = 210, INNER_RY = 100;
-  const OUTER_RX = 410, OUTER_RY = 195;
+function OrbitalSystem({ progress, isMobile }: { progress: number; isMobile: boolean }) {
+  const WIDTH    = isMobile ? 360  : 860;
+  const HEIGHT   = isMobile ? 340  : 460;
+  const INNER_RX = isMobile ? 90   : 210;
+  const INNER_RY = isMobile ? 72   : 100;
+  const OUTER_RX = isMobile ? 160  : 410;
+  const OUTER_RY = isMobile ? 130  : 195;
+  const LOGO_SIZE = isMobile ? 36  : 52;
+
   const ni = INTEGRATIONS_INNER.length, no = INTEGRATIONS_OUTER.length;
-  const innerPositions = INTEGRATIONS_INNER.map((_, i) => ellipsePos((i / ni) * 360, INNER_RX, INNER_RY));
-  const outerPositions = INTEGRATIONS_OUTER.map((_, i) => ellipsePos((i / no) * 360 + 360 / (no * 2), OUTER_RX, OUTER_RY));
+  const innerPositions = INTEGRATIONS_INNER.map((_, i) =>
+    ellipsePos((i / ni) * 360, INNER_RX, INNER_RY));
+  const outerPositions = INTEGRATIONS_OUTER.map((_, i) =>
+    ellipsePos((i / no) * 360 + 360 / (no * 2), OUTER_RX, OUTER_RY));
 
   return (
     <div className="relative mx-auto" style={{ width: WIDTH, height: HEIGHT, maxWidth: "100%" }}>
@@ -97,14 +105,14 @@ function OrbitalSystem({ progress }: { progress: number }) {
           const start = innerLineStart(rank, ni);
           return <LogoNode key={logo.name} name={logo.name} file={logo.file}
             x={innerPositions[i].x} y={innerPositions[i].y}
-            progress={progress} threshold={start + 0.07} />;
+            progress={progress} threshold={start + 0.07} logoSize={LOGO_SIZE} />;
         })}
         {INTEGRATIONS_OUTER.map((logo, i) => {
           const rank = OUTER_STAGGER[i] ?? i;
           const start = outerLineStart(rank, no);
           return <LogoNode key={logo.name} name={logo.name} file={logo.file}
             x={outerPositions[i].x} y={outerPositions[i].y}
-            progress={progress} threshold={start + 0.07} />;
+            progress={progress} threshold={start + 0.07} logoSize={LOGO_SIZE} />;
         })}
       </div>
       <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 10 }}>
@@ -113,13 +121,20 @@ function OrbitalSystem({ progress }: { progress: number }) {
           animate={progress > 0.02 ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
           transition={{ duration: 0.6, ease: EASE }}
         >
-          <div className="flex items-center gap-2.5 px-6 py-3" style={{
+          <div className="flex items-center gap-2.5" style={{
             background: "var(--adoniz-pine)", borderRadius: "40px",
-            boxShadow: "0 8px 32px rgba(0,61,49,0.25), 0 0 0 4px rgba(0,61,49,0.08)", whiteSpace: "nowrap",
+            padding: isMobile ? "10px 20px" : "12px 24px",
+            boxShadow: "0 8px 32px rgba(0,61,49,0.25), 0 0 0 4px rgba(0,61,49,0.08)",
+            whiteSpace: "nowrap",
           }}>
-            <Image src="/logos/adoniz-logo.svg" alt="Adoniz" width={20} height={19}
+            <Image src="/logos/adoniz-logo.svg" alt="Adoniz"
+              width={isMobile ? 16 : 20} height={isMobile ? 15 : 19}
               style={{ filter: "invert(1) brightness(2)", opacity: 0.9 }} />
-            <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "16px", color: "var(--adoniz-fluorescent)", letterSpacing: "-0.02em" }}>
+            <span style={{
+              fontFamily: "var(--font-sans)", fontWeight: 700,
+              fontSize: isMobile ? "14px" : "16px",
+              color: "var(--adoniz-fluorescent)", letterSpacing: "-0.02em",
+            }}>
               Adoniz
             </span>
           </div>
@@ -129,103 +144,12 @@ function OrbitalSystem({ progress }: { progress: number }) {
   );
 }
 
-/* ─── Mobile: static headline + capsule + 4-col logo grid ────────────────── */
-function MobileIntegrations() {
-  return (
-    <section id="integrations" style={{ background: "#FFFFFF", padding: "64px 24px 48px" }}>
-      <div className="text-center" style={{ marginBottom: "32px" }}>
-        <div style={{
-          display: "inline-flex", alignItems: "center", borderRadius: "999px",
-          padding: "6px 16px", marginBottom: "16px",
-          background: "var(--adoniz-mist)", border: "1px solid var(--adoniz-distant-cloud)",
-          fontSize: "11px", fontFamily: "var(--font-sans)", fontWeight: 600,
-          textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--adoniz-forest)",
-        }}>
-          Integrations
-        </div>
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: EASE }}
-          style={{
-            fontFamily: "var(--font-serif)", fontWeight: 400,
-            fontSize: "clamp(1.5rem, 6vw, 2rem)",
-            letterSpacing: "-0.01em", lineHeight: 1.15,
-            color: "var(--adoniz-forest)", marginBottom: "8px",
-          }}
-        >
-          Connects to{" "}
-          <em style={{ fontStyle: "italic", color: "var(--adoniz-pine)" }}>everything</em>{" "}
-          your team already uses
-        </motion.h2>
-        <p style={{ fontFamily: "var(--font-sans)", fontSize: "14px", color: "rgba(0,0,0,0.42)", lineHeight: 1.6, margin: 0 }}>
-          Import from any source. More integrations added weekly.
-        </p>
-      </div>
-
-      {/* Capsule */}
-      <motion.div
-        className="flex justify-center"
-        initial={{ opacity: 0, scale: 0.85 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, ease: EASE }}
-        style={{ marginBottom: "28px" }}
-      >
-        <div className="flex items-center gap-2.5 px-5 py-2.5" style={{
-          background: "var(--adoniz-pine)", borderRadius: "40px",
-          boxShadow: "0 6px 24px rgba(0,61,49,0.22)", whiteSpace: "nowrap",
-        }}>
-          <Image src="/logos/adoniz-logo.svg" alt="Adoniz" width={18} height={17}
-            style={{ filter: "invert(1) brightness(2)", opacity: 0.9 }} />
-          <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "15px", color: "var(--adoniz-fluorescent)", letterSpacing: "-0.02em" }}>
-            Adoniz
-          </span>
-        </div>
-      </motion.div>
-
-      {/* 4-col logo grid */}
-      <motion.div
-        className="integration-logos-mobile"
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.25, ease: EASE }}
-        style={{ maxWidth: "360px", margin: "0 auto" }}
-      >
-        {INTEGRATIONS_ALL.map((logo) => (
-          <div key={logo.name} className="flex flex-col items-center" style={{ gap: "4px" }}>
-            <div className="flex items-center justify-center rounded-xl" style={{
-              width: "48px", height: "48px",
-              background: "#FFFFFF", border: "1px solid var(--adoniz-distant-cloud)",
-              boxShadow: "0 2px 8px rgba(0,61,49,0.06)", padding: "8px",
-            }}>
-              <Image src={`/logos/${logo.file}`} alt={logo.name} width={28} height={28}
-                style={{ objectFit: "contain", width: "100%", height: "auto" }} />
-            </div>
-            <span style={{ fontSize: "9px", fontFamily: "var(--font-sans)", fontWeight: 500, color: "rgba(0,0,0,0.45)", whiteSpace: "nowrap", textAlign: "center" }}>
-              {logo.name}
-            </span>
-          </div>
-        ))}
-      </motion.div>
-
-      <p className="text-center" style={{ marginTop: "32px", fontSize: "13px", fontFamily: "var(--font-sans)", color: "rgba(0,0,0,0.3)" }}>
-        Don&apos;t see your tool?{" "}
-        <a href="#" style={{ color: "var(--adoniz-forest)", textDecoration: "underline", textUnderlineOffset: "3px" }}>
-          Upload CSV or use the API →
-        </a>
-      </p>
-    </section>
-  );
-}
-
-/* ─── Desktop sticky scroll ───────────────────────────────────────────────── */
-function DesktopConnections() {
+/* ─── Unified sticky-scroll section (desktop + mobile) ───────────────────── */
+function ConnectionsAnimation() {
   const outerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: outerRef, offset: ["start start", "end end"] });
   const [liveProgress, setLiveProgress] = useState(0);
+  const isMobile = useIsMobile();
   useMotionValueEvent(scrollYProgress, "change", setLiveProgress);
 
   return (
@@ -251,9 +175,12 @@ function DesktopConnections() {
                 transition={{ duration: 0.7, delay: 0.05, ease: EASE }}
                 style={{
                   fontFamily: "var(--font-serif)", fontWeight: 400,
-                  fontSize: "clamp(1.9rem, 3.5vw, 2.75rem)",
+                  fontSize: isMobile
+                    ? "clamp(1.4rem, 5vw, 1.75rem)"
+                    : "clamp(1.9rem, 3.5vw, 2.75rem)",
                   letterSpacing: "-0.01em", lineHeight: 1.1,
                   color: "var(--adoniz-forest)", marginBottom: "8px",
+                  padding: isMobile ? "0 20px" : undefined,
                 }}
               >
                 Connects to{" "}
@@ -269,7 +196,7 @@ function DesktopConnections() {
               </motion.p>
             </div>
             <div className="flex items-center justify-center flex-1">
-              <OrbitalSystem progress={liveProgress} />
+              <OrbitalSystem progress={liveProgress} isMobile={isMobile} />
             </div>
             <motion.p
               animate={liveProgress > 0.88 ? { opacity: 1 } : { opacity: 0 }}
@@ -291,6 +218,5 @@ function DesktopConnections() {
 
 /* ─── Entry point ─────────────────────────────────────────────────────────── */
 export function ConnectionsSection() {
-  const isMobile = useIsMobile();
-  return isMobile ? <MobileIntegrations /> : <DesktopConnections />;
+  return <ConnectionsAnimation />;
 }

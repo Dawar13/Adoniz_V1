@@ -336,13 +336,6 @@ html, body { overflow-x: hidden; max-width: 100vw; }
   .filter-pills-row::-webkit-scrollbar { display: none; }
 }
 
-/* ─── Integration mobile grid ────────────────────────────────────────────── */
-.integration-logos-mobile {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
 /* ─── Navbar: full-width on mobile (overrides Framer Motion inline) ─────── */
 @media (max-width: 767px) {
   .navbar-inner {
