@@ -6,31 +6,95 @@ import { FEATURES } from "@/lib/constants";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-/* ─── Sentiment bar chart visual ─────────────────────────────────────────── */
-function SentimentBars() {
-  const bars = [
-    { h: 62, c: "rgba(0,61,49,0.15)" },
-    { h: 80, c: "var(--adoniz-electric-lime)" },
-    { h: 54, c: "rgba(0,61,49,0.2)" },
-    { h: 90, c: "var(--adoniz-electric-lime)" },
-    { h: 68, c: "var(--adoniz-june-ivy)" },
-    { h: 45, c: "rgba(0,61,49,0.15)" },
-    { h: 76, c: "var(--adoniz-electric-lime)" },
-    { h: 60, c: "var(--adoniz-june-ivy)" },
-  ];
+/* ─── Sentiment smooth area chart ────────────────────────────────────────── */
+function SentimentChart() {
+  // Normalised y values (0=bottom, 1=top) — a smooth upward-trending wave
+  const pts = [0.38, 0.52, 0.44, 0.61, 0.55, 0.72, 0.65, 0.80, 0.74, 0.88];
+  const W = 260;
+  const H = 72;
+  const pad = 6;
+  const innerW = W - pad * 2;
+  const innerH = H - pad * 2;
+
+  // Build SVG smooth cubic bezier path from points
+  const coords = pts.map((v, i) => ({
+    x: pad + (i / (pts.length - 1)) * innerW,
+    y: pad + (1 - v) * innerH,
+  }));
+
+  // Catmull-Rom → cubic bezier conversion for smooth curves
+  function pathD(points: { x: number; y: number }[]) {
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[Math.max(0, i - 1)];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[Math.min(points.length - 1, i + 2)];
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+    }
+    return d;
+  }
+
+  const linePath = pathD(coords);
+  const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${H} L ${coords[0].x} ${H} Z`;
+
   return (
-    <div className="mt-4 flex items-end gap-2" style={{ height: "72px" }}>
-      {bars.map((b, i) => (
-        <motion.div
-          key={i}
-          className="flex-1 rounded-t-sm"
-          style={{ background: b.c }}
-          initial={{ height: 0 }}
-          whileInView={{ height: `${b.h}%` }}
+    <div className="mt-4" style={{ width: "100%" }}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        style={{ width: "100%", height: "72px", overflow: "visible" }}
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="sentiment-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#D1F843" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#D1F843" stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
+        {/* Area fill */}
+        <motion.path
+          d={areaPath}
+          fill="url(#sentiment-fill)"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.05 * i, ease: EASE }}
+          transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
         />
-      ))}
+        {/* Line stroke — animated draw */}
+        <motion.path
+          d={linePath}
+          fill="none"
+          stroke="var(--adoniz-electric-lime)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          whileInView={{ pathLength: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.1, ease: EASE }}
+        />
+        {/* Last point dot */}
+        <motion.circle
+          cx={coords[coords.length - 1].x}
+          cy={coords[coords.length - 1].y}
+          r="3.5"
+          fill="var(--adoniz-electric-lime)"
+          initial={{ scale: 0, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.3, delay: 1.0, ease: EASE }}
+        />
+      </svg>
+      {/* X-axis labels */}
+      <div className="flex justify-between mt-1" style={{ paddingLeft: `${pad}px`, paddingRight: `${pad}px` }}>
+        {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d) => (
+          <span key={d} style={{ fontSize: "8px", fontFamily: "var(--font-sans)", color: "rgba(0,0,0,0.3)" }}>{d}</span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -361,7 +425,7 @@ export function FeaturesSection() {
             {/* Row 2: Sentiment (2col) + Themes (1col) */}
             <div style={{ gridColumn: "1 / 3", borderRight: "1px solid var(--adoniz-distant-cloud)", borderBottom: "1px solid var(--adoniz-distant-cloud)" }}>
               <FeatureCard {...sentiment} delay={0.16}>
-                <SentimentBars />
+                <SentimentChart />
               </FeatureCard>
             </div>
             <div style={{ gridColumn: "3 / 4", borderRight: "1px solid var(--adoniz-distant-cloud)", borderBottom: "1px solid var(--adoniz-distant-cloud)" }}>
