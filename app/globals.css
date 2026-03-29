@@ -1,26 +1,216 @@
 @import "tailwindcss";
 
+/* ─── Adoniz V2 Design System ─────────────────────────────────────────────── */
+@theme {
+  --font-serif:  var(--font-serif);
+  --font-sans:   var(--font-sans);
+  --font-mono:   var(--font-mono);
+
+  /* 60% Dominant */
+  --color-adoniz-pine:           #003D31;
+  --color-adoniz-forest:         #005840;
+  --color-adoniz-teal-spill:     #032425;
+  --color-adoniz-device-green:   #013540;
+  --color-adoniz-snow:           #F2F7F7;
+  --color-adoniz-lighthouse:     #F3F4F4;
+  --color-adoniz-mist:           #ECF0EF;
+
+  /* 30% Supporting */
+  --color-adoniz-fluorescent:    #F0FF3D;
+  --color-adoniz-electric-lime:  #D1F843;
+  --color-adoniz-yellow-ace:     #F1FF58;
+  --color-adoniz-isotonic:       #DDFF55;
+  --color-adoniz-cocoon:         #DEDBCC;
+  --color-adoniz-distant-cloud:  #E5EAE6;
+  --color-adoniz-cloudy:         #C0D8D7;
+  --color-adoniz-june-ivy:       #416858;
+
+  /* 10% Accent */
+  --color-adoniz-neptune:        #11425D;
+  --color-adoniz-midnight:       #002233;
+  --color-adoniz-pacific:        #C0D6EA;
+  --color-adoniz-cheviot:        #F6F2E8;
+}
+
+/* ─── CSS Custom Properties ───────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --adoniz-pine:          #003D31;
+  --adoniz-forest:        #005840;
+  --adoniz-teal-spill:    #032425;
+  --adoniz-device-green:  #013540;
+  --adoniz-snow:          #F2F7F7;
+  --adoniz-lighthouse:    #F3F4F4;
+  --adoniz-mist:          #ECF0EF;
+  --adoniz-fluorescent:   #F0FF3D;
+  --adoniz-electric-lime: #D1F843;
+  --adoniz-yellow-ace:    #F1FF58;
+  --adoniz-isotonic:      #DDFF55;
+  --adoniz-cocoon:        #DEDBCC;
+  --adoniz-distant-cloud: #E5EAE6;
+  --adoniz-cloudy:        #C0D8D7;
+  --adoniz-june-ivy:      #416858;
+  --adoniz-neptune:       #11425D;
+  --adoniz-midnight:      #002233;
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-default:  cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ─── Base Reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: #000000;
+  font-family: var(--font-sans), 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+/* ─── Typography helpers ──────────────────────────────────────────────────── */
+.font-serif  { font-family: var(--font-serif),  'Instrument Serif', serif; }
+.font-sans   { font-family: var(--font-sans),   'Plus Jakarta Sans', sans-serif; }
+.font-mono   { font-family: var(--font-mono),   'JetBrains Mono', monospace; }
+
+/* ─── Hero gradient blobs ─────────────────────────────────────────────────── */
+@keyframes drift-1 {
+  0%   { transform: translate(0%,   0%)   scale(1); }
+  25%  { transform: translate(8%,  -12%)  scale(1.1); }
+  50%  { transform: translate(-5%,  15%)  scale(0.95); }
+  75%  { transform: translate(12%,  8%)   scale(1.05); }
+  100% { transform: translate(0%,   0%)   scale(1); }
+}
+@keyframes drift-2 {
+  0%   { transform: translate(0%,   0%)  scale(1); }
+  33%  { transform: translate(-10%, 10%) scale(1.08); }
+  66%  { transform: translate(8%,  -8%)  scale(0.92); }
+  100% { transform: translate(0%,   0%)  scale(1); }
+}
+@keyframes drift-3 {
+  0%   { transform: translate(0%,  0%)   scale(1); }
+  40%  { transform: translate(6%,  12%)  scale(1.12); }
+  80%  { transform: translate(-8%, -6%)  scale(0.96); }
+  100% { transform: translate(0%,  0%)   scale(1); }
+}
+.blob-1 { animation: drift-1 80s ease-in-out infinite; }
+.blob-2 { animation: drift-2 70s ease-in-out infinite; }
+.blob-3 { animation: drift-3 90s ease-in-out infinite; }
+
+/* ─── Marquee ─────────────────────────────────────────────────────────────── */
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.marquee-track { animation: marquee 35s linear infinite; display: flex; white-space: nowrap; }
+
+/* ─── Orbital rotation (kept, but no longer applied after reveal per v2.2) ── */
+@keyframes orbit-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.orbit-rotate { animation: orbit-spin 120s linear infinite; }
+
+/* ─── Device glow breathe ─────────────────────────────────────────────────── */
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  50%       { opacity: 1;   transform: translate(-50%, -50%) scale(1.05); }
+}
+.device-glow { animation: glow-breathe 4s ease-in-out infinite; }
+
+/* ─── Book a Demo button (V2.4) ──────────────────────────────────────────── */
+@keyframes icon-slide-right {
+  0%   { transform: translateX(0); }
+  40%  { transform: translateX(6px); }
+  100% { transform: translateX(0); }
+}
+.btn-book-demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  background: var(--adoniz-teal-spill);
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-book-demo .icon-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--adoniz-fluorescent);
+  border-radius: 8px;
+  margin: 4px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.btn-book-demo .icon-block svg {
+  width: 18px;
+  height: 18px;
+  color: var(--adoniz-teal-spill);
+}
+.btn-book-demo .label {
+  padding: 0 18px 0 10px;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.btn-book-demo:hover {
+  background: var(--adoniz-pine);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0, 61, 49, 0.2);
+}
+.btn-book-demo:hover .icon-block {
+  background: var(--adoniz-yellow-ace);
+}
+.btn-book-demo:active .icon-block svg {
+  animation: icon-slide-right 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ─── Sidebar active pulse ────────────────────────────────────────────────── */
+@keyframes sidebar-active-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
+.sidebar-active { animation: sidebar-active-pulse 2s ease-in-out infinite; }
+
+/* ─── Pulsing dot (hero badge) ────────────────────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.75); }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+/* ─── Nav link underline ──────────────────────────────────────────────────── */
+.nav-link { position: relative; text-decoration: none; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 0; height: 1.5px;
+  background: var(--adoniz-forest);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-link:hover::after { width: 100%; }
+
+/* ─── Hero search — italic placeholder only, normal typed text ───────────── */
+.hero-search-input::placeholder { font-style: italic; color: rgba(0,0,0,0.35); font-weight: 400; }
+
+/* ─── Dashboard typing cursor ─────────────────────────────────────────────── */
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+.typing-cursor { animation: blink 1s step-start infinite; }
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #F2F7F7; }
+::-webkit-scrollbar-thumb { background: #C0D8D7; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #416858; }
+
+/* ─── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .blob-1, .blob-2, .blob-3,
+  .marquee-track,
+  .orbit-rotate { animation: none; }
 }
