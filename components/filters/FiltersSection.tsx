@@ -243,7 +243,7 @@ export function FiltersSection() {
                       <button
                         key={cat.label}
                         onClick={() => toggle(cat.label)}
-                        className="rounded-full transition-all duration-200"
+                        className="transition-all duration-200"
                         style={{
                           padding: "6px 14px",
                           fontSize: "12px",
@@ -253,6 +253,10 @@ export function FiltersSection() {
                           color: isActive ? "var(--adoniz-pine)" : "rgba(0,0,0,0.5)",
                           border: isActive ? "none" : "1px solid var(--adoniz-distant-cloud)",
                           cursor: "pointer",
+                          borderRadius: "8px",
+                          minHeight: "auto",
+                          lineHeight: 1.4,
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {cat.label}

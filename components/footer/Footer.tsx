@@ -40,7 +40,7 @@ const COL_LINKS: { heading: string; items: { label: string; href: string }[] }[]
 
 function LinkCol({ heading, items }: { heading: string; items: { label: string; href: string }[] }) {
   return (
-    <div style={{ padding: "24px 28px" }} className="flex flex-col gap-3">
+    <div style={{ padding: "18px 22px" }} className="flex flex-col gap-2.5">
       <span
         style={{
           fontFamily: "var(--font-sans)",
@@ -122,11 +122,11 @@ export function Footer() {
       {/* Bottom row — left ~30% decorative, right ~70% massive wordmark */}
       <div
         className="footer-bottom-grid grid"
-        style={{ gridTemplateColumns: "30% 1fr", minHeight: "220px" }}
+        style={{ gridTemplateColumns: "30% 1fr", minHeight: "160px" }}
       >
         {/* Left — logo + copyright + decorative mark */}
         <div
-          className="flex flex-col justify-between p-7"
+          className="flex flex-col justify-between p-5"
           style={{ borderRight: BORDER }}
         >
           {/* Logo + wordmark */}
@@ -151,7 +151,7 @@ export function Footer() {
             </span>
           </div>
 
-          <DecorativeMark />
+          <div className="hidden sm:block"><DecorativeMark /></div>
 
           {/* Copyright */}
           <span
@@ -170,14 +170,14 @@ export function Footer() {
         {/* Right — massive wordmark */}
         <div
           className="relative overflow-hidden flex items-end"
-          style={{ padding: "24px 32px 0 32px" }}
+          style={{ padding: "16px 24px 0 24px" }}
         >
           <span
             className="footer-wordmark"
             style={{
               fontFamily: "var(--font-sans)",
               fontWeight: 900,
-              fontSize: "clamp(12rem, 22vw, 20rem)",
+              fontSize: "clamp(8rem, 18vw, 16rem)",
               lineHeight: 0.85,
               color: "#fff",
               opacity: 0.15,

@@ -288,7 +288,7 @@ function WhiteDashboard() {
   ];
 
   return (
-    <div ref={ref} className="w-full h-full flex flex-col overflow-hidden" style={{ fontFamily: "var(--font-sans)", background: "#fff" }}>
+    <div ref={ref} className="white-dashboard w-full h-full flex flex-col overflow-hidden" style={{ fontFamily: "var(--font-sans)", background: "#fff" }}>
       {/* macOS chrome */}
       <div
         className="flex items-center gap-1.5 px-3 flex-shrink-0"
@@ -460,7 +460,7 @@ function WhiteDashboard() {
           </div>
 
           {/* Recent conversations */}
-          <div className="flex-shrink-0 rounded-lg overflow-hidden" style={{ border: "1px solid var(--adoniz-distant-cloud)" }}>
+          <div className="dashboard-recent flex-shrink-0 rounded-lg overflow-hidden" style={{ border: "1px solid var(--adoniz-distant-cloud)" }}>
             <div className="flex items-center justify-between px-2.5 py-1.5" style={{ borderBottom: "1px solid var(--adoniz-distant-cloud)", background: "var(--adoniz-lighthouse)" }}>
               <span style={{ fontSize: "8px", fontFamily: "var(--font-sans)", fontWeight: 600, color: "rgba(0,0,0,0.45)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 Recent

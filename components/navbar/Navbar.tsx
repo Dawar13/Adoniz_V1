@@ -70,27 +70,41 @@ export function Navbar() {
 
   return (
     <>
-      {/* SVG displacement filter — desktop liquid glass only */}
-      {!isMobile && (
-        <svg style={{ display: "none", position: "fixed" }} aria-hidden="true">
-          <defs>
-            <filter id="navbar-glass" x="-10%" y="-30%" width="120%" height="160%" filterUnits="objectBoundingBox">
-              <feTurbulence type="fractalNoise" baseFrequency="0.0015 0.006" numOctaves="1" seed="17" result="turbulence" />
-              <feComponentTransfer in="turbulence" result="mapped">
-                <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
-                <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
-                <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
-              </feComponentTransfer>
-              <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
-              <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100" lightingColor="white" result="specLight">
-                <fePointLight x="-200" y="-200" z="300" />
-              </feSpecularLighting>
-              <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage" />
-              <feDisplacementMap in="SourceGraphic" in2="softMap" scale="90" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-          </defs>
-        </svg>
-      )}
+      {/* SVG displacement filters — liquid glass for desktop + mobile */}
+      <svg style={{ display: "none", position: "fixed" }} aria-hidden="true">
+        <defs>
+          {/* Desktop capsule — stronger displacement */}
+          <filter id="navbar-glass" x="-10%" y="-30%" width="120%" height="160%" filterUnits="objectBoundingBox">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0015 0.006" numOctaves="1" seed="17" result="turbulence" />
+            <feComponentTransfer in="turbulence" result="mapped">
+              <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
+              <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+              <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+            </feComponentTransfer>
+            <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+            <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100" lightingColor="white" result="specLight">
+              <fePointLight x="-200" y="-200" z="300" />
+            </feSpecularLighting>
+            <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage" />
+            <feDisplacementMap in="SourceGraphic" in2="softMap" scale="90" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+          {/* Mobile bar — softer displacement tuned for full-width */}
+          <filter id="navbar-glass-mobile" x="-5%" y="-40%" width="110%" height="180%" filterUnits="objectBoundingBox">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0035 0.008" numOctaves="1" seed="42" result="turbulence" />
+            <feComponentTransfer in="turbulence" result="mapped">
+              <feFuncR type="gamma" amplitude="1" exponent="8" offset="0.5" />
+              <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+              <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+            </feComponentTransfer>
+            <feGaussianBlur in="turbulence" stdDeviation="2.5" result="softMap" />
+            <feSpecularLighting in="softMap" surfaceScale="4" specularConstant="1" specularExponent="80" lightingColor="white" result="specLight">
+              <fePointLight x="50%" y="-100" z="200" />
+            </feSpecularLighting>
+            <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage" />
+            <feDisplacementMap in="SourceGraphic" in2="softMap" scale="60" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
 
       <motion.nav
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center"
@@ -104,28 +118,17 @@ export function Navbar() {
           transition={{ duration: 0.55, ease: [0.32, 0, 0.1, 1] }}
           style={{ borderWidth: "1px", borderStyle: "solid", borderColor: "transparent" }}
         >
-          {/* Layer 1: Distortion (desktop) / Blur (mobile) */}
-          {!isMobile ? (
-            <motion.div
-              animate={{ opacity: scrolled ? 1 : 0 }}
-              transition={{ duration: 0.4, ease: [0.32, 0, 0.1, 1] }}
-              style={{
-                position: "absolute", inset: 0, borderRadius: "inherit",
-                backdropFilter: "blur(3px)", filter: "url(#navbar-glass)",
-                isolation: "isolate", zIndex: 0,
-              }}
-            />
-          ) : (
-            <motion.div
-              animate={{ opacity: scrolled ? 1 : 0 }}
-              transition={{ duration: 0.4, ease: [0.32, 0, 0.1, 1] }}
-              style={{
-                position: "absolute", inset: 0, borderRadius: "inherit",
-                backdropFilter: "blur(20px) saturate(1.8)",
-                zIndex: 0,
-              }}
-            />
-          )}
+          {/* Layer 1: Liquid glass displacement — desktop + mobile */}
+          <motion.div
+            animate={{ opacity: scrolled ? 1 : 0 }}
+            transition={{ duration: 0.4, ease: [0.32, 0, 0.1, 1] }}
+            style={{
+              position: "absolute", inset: 0, borderRadius: "inherit",
+              backdropFilter: "blur(3px)",
+              filter: isMobile ? "url(#navbar-glass-mobile)" : "url(#navbar-glass)",
+              isolation: "isolate", zIndex: 0,
+            }}
+          />
 
           {/* Layer 2: White tint */}
           <motion.div

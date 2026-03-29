@@ -292,7 +292,11 @@ html, body { overflow-x: clip; max-width: 100vw; }
     flex-direction: column !important;
   }
   .cta-form input,
-  .cta-form button { width: 100% !important; }
+  .cta-form button {
+    width: 100% !important;
+    height: 56px !important;
+    min-height: 56px !important;
+  }
 }
 
 /* ─── Footer top grid — 2-col tablet, 1-col mobile ──────────────────────── */
@@ -321,7 +325,7 @@ html, body { overflow-x: clip; max-width: 100vw; }
 
 /* ─── Device frames — scale down on mobile ───────────────────────────────── */
 @media (max-width: 767px) {
-  .device-laptop { width: 94vw !important; max-width: 480px !important; }
+  .device-laptop { width: 94vw !important; max-width: 500px !important; }
   .device-phone  { display: none !important; }
 }
 
@@ -330,12 +334,23 @@ html, body { overflow-x: clip; max-width: 100vw; }
   .dashboard-sidebar { display: none !important; }
   .dashboard-stats   { grid-template-columns: repeat(2, 1fr) !important; }
   .dashboard-charts  { display: none !important; }
+  .dashboard-recent  { display: none !important; }
+  /* Scale the full dashboard content to fit the smaller frame */
+  .white-dashboard {
+    zoom: 0.72;
+  }
 }
 
-/* ─── Footer wordmark — scale on mobile ─────────────────────────────────── */
+/* ─── Footer — compact on mobile ────────────────────────────────────────── */
 @media (max-width: 767px) {
-  .footer-wordmark { font-size: clamp(5rem, 26vw, 9rem) !important; }
+  .footer-wordmark    { font-size: clamp(4.5rem, 24vw, 8rem) !important; }
   .footer-bottom-grid { min-height: auto !important; }
+  .footer-top-grid > div { padding: 14px 16px !important; }
+}
+
+/* ─── Filter pills — override global min-height, keep rectangular ────────── */
+@media (max-width: 767px) {
+  .filter-pills-row button { min-height: unset !important; }
 }
 
 /* ─── Filters section — tighter on mobile ───────────────────────────────── */
