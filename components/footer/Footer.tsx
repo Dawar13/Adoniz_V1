@@ -104,7 +104,7 @@ export function Footer() {
     <footer style={{ background: "var(--adoniz-teal-spill)" }}>
       {/* Top row — 4 equal columns */}
       <div
-        className="grid grid-cols-2 lg:grid-cols-4"
+        className="footer-top-grid grid grid-cols-2 lg:grid-cols-4"
         style={{ borderBottom: BORDER }}
       >
         {COL_LINKS.map((col, i) => (
@@ -121,7 +121,7 @@ export function Footer() {
 
       {/* Bottom row — left ~30% decorative, right ~70% massive wordmark */}
       <div
-        className="grid"
+        className="footer-bottom-grid grid"
         style={{ gridTemplateColumns: "30% 1fr", minHeight: "220px" }}
       >
         {/* Left — logo + copyright + decorative mark */}

@@ -214,3 +214,143 @@ body {
   .marquee-track,
   .orbit-rotate { animation: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVENESS  (≤1023px tablet, ≤767px mobile, ≤639px narrow)
+   Desktop (≥1024px) is UNTOUCHED by all rules below.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Global: prevent horizontal overflow ────────────────────────────────── */
+html, body { overflow-x: hidden; max-width: 100vw; }
+
+/* ─── Mobile touch targets ───────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  button, a[href] { min-height: 44px; }
+}
+
+/* ─── Reduce gradient blob complexity on mobile ──────────────────────────── */
+@media (max-width: 767px) {
+  .blob-3 { display: none; }
+  .blob-1, .blob-2 { filter: blur(60px) !important; }
+  .device-glow { animation: none !important; opacity: 0.6; }
+}
+
+/* ─── Hero CTA row — stack vertically on narrow mobile (≤480px) ──────────── */
+@media (max-width: 480px) {
+  .hero-cta-row {
+    flex-direction: column !important;
+    width: 100%;
+    align-items: stretch !important;
+  }
+  .hero-cta-row > button {
+    width: 100%;
+    height: 48px;
+    justify-content: center;
+  }
+  .hero-cta-row > .btn-book-demo {
+    width: 100%;
+    height: 48px;
+    justify-content: center;
+  }
+  .hero-cta-row > .btn-book-demo .label {
+    flex: 1;
+    text-align: center;
+    padding-right: 20px;
+  }
+}
+
+/* ─── Trust row — centered stacked on mobile ─────────────────────────────── */
+@media (max-width: 639px) {
+  .trust-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .trust-row .trust-text {
+    margin-left: 0 !important;
+    text-align: center;
+  }
+}
+
+/* ─── Bento grid — single column on tablet/mobile ────────────────────────── */
+@media (max-width: 767px) {
+  .bento-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .bento-grid > div {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    border-right: none !important;
+  }
+  /* hide the empty filler cell */
+  .bento-filler { display: none !important; }
+}
+
+/* ─── CTA form — stack on narrow mobile ──────────────────────────────────── */
+@media (max-width: 639px) {
+  .cta-form {
+    flex-direction: column !important;
+  }
+  .cta-form input,
+  .cta-form button { width: 100% !important; }
+}
+
+/* ─── Footer top grid — 2-col tablet, 1-col mobile ──────────────────────── */
+@media (max-width: 479px) {
+  .footer-top-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .footer-top-grid > div { border-right: none !important; }
+}
+
+/* ─── Footer bottom grid — single column on mobile ──────────────────────── */
+@media (max-width: 767px) {
+  .footer-bottom-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .footer-bottom-grid > div { border-right: none !important; }
+}
+
+/* ─── Marquee — mobile sizing ────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .marquee-track > div {
+    font-size: 12px !important;
+    padding: 6px 14px !important;
+  }
+}
+
+/* ─── Device frames — scale down on mobile ───────────────────────────────── */
+@media (max-width: 639px) {
+  .device-laptop { width: 90vw !important; max-width: 360px !important; }
+  .device-phone  { width: 80px !important; right: -12px !important; bottom: 10px !important; }
+}
+
+/* ─── Filters section — tighter on mobile ───────────────────────────────── */
+@media (max-width: 767px) {
+  .filter-pills-row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-pills-row::-webkit-scrollbar { display: none; }
+}
+
+/* ─── Integration mobile grid ────────────────────────────────────────────── */
+.integration-logos-mobile {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* ─── Navbar: full-width on mobile (overrides Framer Motion inline) ─────── */
+@media (max-width: 767px) {
+  .navbar-inner {
+    width: 100% !important;
+    min-width: unset !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}

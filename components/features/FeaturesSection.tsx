@@ -399,7 +399,7 @@ export function FeaturesSection() {
           }}
         >
           <div
-            className="grid"
+            className="bento-grid grid"
             style={{
               gridTemplateColumns: "repeat(4, 1fr)",
               gap: "0",
@@ -440,8 +440,8 @@ export function FeaturesSection() {
                 <SummarySnippet />
               </FeatureCard>
             </div>
-            {/* Filler to complete the row visually */}
-            <div style={{ gridColumn: "3 / 4", borderRight: "1px solid var(--adoniz-distant-cloud)", background: "rgba(0,61,49,0.02)" }} />
+            {/* Filler to complete the row visually — hidden on mobile via .bento-filler */}
+            <div className="bento-filler" style={{ gridColumn: "3 / 4", borderRight: "1px solid var(--adoniz-distant-cloud)", background: "rgba(0,61,49,0.02)" }} />
           </div>
         </div>
       </div>

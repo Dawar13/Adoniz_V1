@@ -833,7 +833,7 @@ export function DeviceShowcase() {
             whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.85, ease: EASE }}
-            className="w-full"
+            className="device-laptop w-full"
             style={{ maxWidth: "760px" }}
           >
             <LaptopFrame>
@@ -847,7 +847,7 @@ export function DeviceShowcase() {
             whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.85, delay: 0.18, ease: EASE }}
-            className="absolute"
+            className="device-phone absolute"
             style={{ right: "-28px", bottom: "20px", zIndex: 10 }}
           >
             <PhoneFrame>

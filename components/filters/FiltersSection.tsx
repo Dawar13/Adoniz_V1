@@ -236,7 +236,7 @@ export function FiltersSection() {
                 <p style={{ fontSize: "10px", fontFamily: "var(--font-sans)", fontWeight: 600, color: "rgba(0,0,0,0.35)", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: "10px" }}>
                   Filter by category
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="filter-pills-row flex flex-wrap gap-2">
                   {FILTER_CATEGORIES.map((cat) => {
                     const isActive = active.includes(cat.label);
                     return (

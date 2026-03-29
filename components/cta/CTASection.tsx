@@ -116,7 +116,7 @@ export function CTASection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.65, delay: 0.3, ease: EASE }}
-          className="flex flex-col sm:flex-row gap-3 justify-center max-w-[460px] mx-auto"
+          className="cta-form flex flex-col sm:flex-row gap-3 justify-center max-w-[460px] mx-auto"
         >
           {submitted ? (
             <div
