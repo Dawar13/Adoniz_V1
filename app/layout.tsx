@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import {
   Instrument_Serif,
   Plus_Jakarta_Sans,
@@ -51,6 +52,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-white" style={{ overflowX: "clip" }}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
