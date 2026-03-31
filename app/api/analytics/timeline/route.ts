@@ -12,17 +12,17 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("conversations")
-    .select("occurred_at, sentiment")
+    .select("conversation_date, sentiment")
     .eq("user_id", user.id)
-    .gte("occurred_at", since)
-    .order("occurred_at");
+    .gte("conversation_date", since)
+    .order("conversation_date");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // Bucket by day
   const dayMap = new Map<string, { total: number; positive: number; negative: number; neutral: number }>();
   for (const row of data) {
-    const day = (row.occurred_at ?? "").slice(0, 10);
+    const day = (row.conversation_date ?? "").slice(0, 10);
     if (!day) continue;
     const entry = dayMap.get(day) ?? { total: 0, positive: 0, negative: 0, neutral: 0 };
     entry.total++;

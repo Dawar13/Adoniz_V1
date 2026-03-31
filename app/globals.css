@@ -403,3 +403,48 @@ html, body { overflow-x: clip; max-width: 100vw; }
     padding-right: 20px !important;
   }
 }
+
+/* ========================================
+   PRODUCT UI TOKENS — ADONIZ App
+   Added for the product dashboard, chat,
+   and ingestion interfaces.
+   DO NOT modify any CSS above this line.
+   ======================================== */
+
+:root {
+  --app-sidebar-bg: #003D31;
+  --app-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --app-sidebar-active: rgba(240, 255, 61, 0.12);
+  --app-sidebar-text: rgba(255, 255, 255, 0.7);
+  --app-sidebar-text-active: #F0FF3D;
+  --app-sidebar-width: 256px;
+
+  --app-content-bg: #F8FAF9;
+  --app-card-bg: #FFFFFF;
+  --app-card-border: #E5EAE6;
+  --app-card-radius: 12px;
+
+  --chart-positive: #22C55E;
+  --chart-neutral: #F59E0B;
+  --chart-negative: #EF4444;
+  --chart-bug: #EF4444;
+  --chart-feature: #3B82F6;
+  --chart-escalation: #F97316;
+  --chart-billing: #8B5CF6;
+  --chart-onboarding: #06B6D4;
+  --chart-general: #6B7280;
+  --chart-praise: #22C55E;
+  --chart-churn: #DC2626;
+
+  --chat-user-bg: #003D31;
+  --chat-user-text: #FFFFFF;
+  --chat-assistant-bg: #F2F7F7;
+  --chat-assistant-text: #1A1A1A;
+
+  --badge-positive-bg: #DCFCE7;
+  --badge-positive-text: #166534;
+  --badge-neutral-bg: #FEF3C7;
+  --badge-neutral-text: #92400E;
+  --badge-negative-bg: #FEE2E2;
+  --badge-negative-text: #991B1B;
+}

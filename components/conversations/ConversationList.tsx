@@ -1,13 +1,13 @@
 "use client";
 
 import useSWR from "swr";
-import type { PaginatedConversations } from "@/types/conversation";
+import type { ConversationRow } from "@/types/conversation";
 import { ConversationCard } from "./ConversationCard";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function ConversationList() {
-  const { data, isLoading } = useSWR<PaginatedConversations>("/api/conversations?page_size=20", fetcher);
+  const { data, isLoading } = useSWR<{ data: ConversationRow[] }>("/api/conversations?page_size=20", fetcher);
 
   if (isLoading) {
     return <p style={{ fontFamily: "var(--font-sans)", fontSize: "13px", color: "rgba(0,0,0,0.4)" }}>Loading…</p>;
@@ -25,7 +25,7 @@ export function ConversationList() {
 
   return (
     <div className="flex flex-col gap-3">
-      {conversations.map((c) => (
+      {conversations.map((c: ConversationRow) => (
         <ConversationCard key={c.id} conversation={c} />
       ))}
     </div>

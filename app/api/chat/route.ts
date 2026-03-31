@@ -14,10 +14,12 @@ export async function POST(request: NextRequest) {
   const queryType = await routeQuery(message);
   const { answer, sources } = await answerWithRAG(message, user.id, queryType);
 
+  const sessionId = session_id ?? crypto.randomUUID();
+
   // Persist messages
   await supabase.from("chat_messages").insert([
-    { user_id: user.id, session_id, role: "user", content: message },
-    { user_id: user.id, session_id, role: "assistant", content: answer, sources },
+    { user_id: user.id, session_id: sessionId, role: "user", content: message },
+    { user_id: user.id, session_id: sessionId, role: "assistant", content: answer, query_type: queryType as "aggregate" | "search" | "hybrid" },
   ]);
 
   return NextResponse.json({ message: answer, sources, query_type: queryType });

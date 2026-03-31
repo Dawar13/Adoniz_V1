@@ -1,51 +1,56 @@
-import Papa from "papaparse";
+import Papa from 'papaparse'
+import type { ParsedConversation } from '@/types/conversation'
 
-/**
- * Parses a CSV buffer into an array of conversation strings.
- * Expects either:
- * - A single column with the full conversation text, OR
- * - Multiple columns where we concatenate role + content pairs
- */
-export function parseCSV(buffer: Buffer): string[] {
-  const text = buffer.toString("utf-8");
+export async function parseCSV(file: File): Promise<ParsedConversation[]> {
+  const text = await file.text()
 
-  const result = Papa.parse<Record<string, string>>(text, {
-    header: true,
-    skipEmptyLines: true,
-    trimHeaders: true,
-  });
+  return new Promise((resolve, reject) => {
+    Papa.parse(text, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const conversations: ParsedConversation[] = []
 
-  if (result.errors.length > 0) {
-    const fatal = result.errors.filter((e) => e.type === "Delimiter");
-    if (fatal.length > 0) throw new Error("Invalid CSV format");
-  }
+        for (const row of results.data as Record<string, string>[]) {
+          const rawText =
+            row['conversation'] ||
+            row['text'] ||
+            row['message'] ||
+            row['content'] ||
+            row['body'] ||
+            row['transcript'] ||
+            row['chat'] ||
+            Object.values(row).join(' ')
 
-  const rows = result.data;
-  if (rows.length === 0) return [];
+          if (!rawText || rawText.trim().length < 10) continue
 
-  const columns = Object.keys(rows[0]);
+          conversations.push({
+            raw_text: rawText.trim(),
+            external_id: row['id'] || row['conversation_id'] || row['ticket_id'] || undefined,
+            conversation_date:
+              row['date'] || row['created_at'] || row['timestamp'] || undefined,
+            participants: extractParticipants(row),
+          })
+        }
 
-  // Try to find a primary text column
-  const textColumn = columns.find((c) =>
-    ["conversation", "text", "content", "message", "transcript", "body"].includes(c.toLowerCase())
-  );
-
-  if (textColumn) {
-    return rows
-      .map((r) => r[textColumn])
-      .filter((t): t is string => typeof t === "string" && t.trim().length > 0);
-  }
-
-  // Fallback: concatenate all column values into one string per row
-  return rows
-    .map((r) => {
-      return columns
-        .map((col) => {
-          const val = r[col];
-          return val ? `${col}: ${val}` : null;
-        })
-        .filter(Boolean)
-        .join("\n");
+        if (conversations.length === 0) {
+          reject(new Error('No conversations found in CSV. Make sure there is a column with conversation text.'))
+        } else {
+          resolve(conversations)
+        }
+      },
+      error: (err: Error) => reject(new Error(`CSV parse error: ${err.message}`)),
     })
-    .filter((t) => t.trim().length > 0);
+  })
+}
+
+function extractParticipants(row: Record<string, string>) {
+  const participants: { role: string; name: string }[] = []
+  if (row['customer'] || row['customer_name']) {
+    participants.push({ role: 'customer', name: row['customer'] || row['customer_name'] })
+  }
+  if (row['agent'] || row['agent_name'] || row['support']) {
+    participants.push({ role: 'agent', name: row['agent'] || row['agent_name'] || row['support'] })
+  }
+  return participants.length > 0 ? participants : undefined
 }

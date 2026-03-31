@@ -1,5 +1,5 @@
-import { getOpenAI, CHAT_MODEL } from "./openai";
-import { embed } from "./embeddings";
+import { openai, CHAT_MODEL } from "./openai";
+import { generateEmbedding } from "./embeddings";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { QueryType } from "./chat-router";
 
@@ -35,13 +35,13 @@ export async function answerWithRAG(
 
   if (queryType === "rag") {
     // Semantic search using embeddings
-    const queryEmbedding = await embed(query);
+    const queryEmbedding = await generateEmbedding(query);
 
     const { data: matches } = await admin.rpc("match_conversations", {
+      p_user_id: userId,
       query_embedding: queryEmbedding,
       match_threshold: 0.6,
       match_count: 8,
-      filter_user_id: userId,
     });
 
     sources = (matches ?? []) as RAGSource[];
@@ -55,13 +55,21 @@ export async function answerWithRAG(
     // For analytics/summary queries, pull recent conversations
     const { data: recent } = await admin
       .from("conversations")
-      .select("id, summary, sanitized_text, sentiment, category, occurred_at")
+      .select("id, summary, sanitized_text, sentiment, category, conversation_date")
       .eq("user_id", userId)
       .not("summary", "is", null)
       .order("created_at", { ascending: false })
       .limit(30);
 
-    sources = (recent ?? []).map((r) => ({ ...r, similarity: 1 }));
+    sources = (recent ?? []).map((r) => ({
+      id: r.id,
+      summary: r.summary,
+      sanitized_text: r.sanitized_text,
+      sentiment: r.sentiment,
+      category: r.category,
+      occurred_at: r.conversation_date,
+      similarity: 1,
+    }));
     contextText = sources
       .map(
         (s, i) =>
@@ -70,7 +78,6 @@ export async function answerWithRAG(
       .join("\n\n");
   }
 
-  const openai = getOpenAI();
   const completion = await openai.chat.completions.create({
     model: CHAT_MODEL,
     messages: [

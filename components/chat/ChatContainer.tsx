@@ -1,13 +1,21 @@
 "use client";
 
+import { useRef } from "react";
 import { useChat } from "@/hooks/useChat";
 import { MessageBubble } from "./MessageBubble";
 import { ChatInput } from "./ChatInput";
 import { SuggestedQueries } from "./SuggestedQueries";
 import { StreamingIndicator } from "./StreamingIndicator";
 
+const SESSION_ID = crypto.randomUUID();
+
 export function ChatContainer() {
-  const { messages, loading, sendMessage } = useChat();
+  const { messages, isLoading, sendMessage } = useChat();
+  const sessionRef = useRef(SESSION_ID);
+
+  const handleSend = (message: string) => {
+    sendMessage(message, sessionRef.current);
+  };
 
   return (
     <div className="flex flex-col h-full max-w-3xl mx-auto">
@@ -17,15 +25,15 @@ export function ChatContainer() {
             <p style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: "24px", color: "var(--adoniz-pine)", textAlign: "center" }}>
               What do you want to know about your customers?
             </p>
-            <SuggestedQueries onSelect={sendMessage} />
+            <SuggestedQueries onSelect={handleSend} />
           </div>
         )}
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
         ))}
-        {loading && <StreamingIndicator />}
+        {isLoading && <StreamingIndicator />}
       </div>
-      <ChatInput onSend={sendMessage} disabled={loading} />
+      <ChatInput onSend={handleSend} disabled={isLoading} />
     </div>
   );
 }

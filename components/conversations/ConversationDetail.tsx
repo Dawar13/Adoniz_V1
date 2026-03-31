@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import type { Conversation } from "@/types/conversation";
+import type { ConversationRow } from "@/types/conversation";
 import { CATEGORY_LABELS, SENTIMENT_COLORS } from "@/lib/product-constants";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -9,18 +9,22 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 interface Props { id: string }
 
 export function ConversationDetail({ id }: Props) {
-  const { data: c, isLoading } = useSWR<Conversation>(`/api/conversations/${id}`, fetcher);
+  const { data: c, isLoading } = useSWR<ConversationRow>(`/api/conversations/${id}`, fetcher);
 
   if (isLoading) return <p style={{ fontFamily: "var(--font-sans)", fontSize: "13px" }}>Loading…</p>;
   if (!c) return <p style={{ fontFamily: "var(--font-sans)", fontSize: "13px" }}>Not found</p>;
+
+  const sentimentColor = c.sentiment
+    ? (SENTIMENT_COLORS as Record<string, { dot: string; bg: string; text: string }>)[c.sentiment]
+    : null;
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
       {/* Header */}
       <div className="flex items-center gap-3 flex-wrap">
-        {c.sentiment && (
+        {sentimentColor && c.sentiment && (
           <span className="rounded-full px-3 py-1"
-            style={{ fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-sans)", background: `${SENTIMENT_COLORS[c.sentiment]}18`, color: SENTIMENT_COLORS[c.sentiment] }}>
+            style={{ fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-sans)", background: sentimentColor.bg, color: sentimentColor.text }}>
             {c.sentiment}
           </span>
         )}

@@ -1,45 +1,58 @@
-/**
- * Parses a JSON buffer into conversation strings.
- * Supports common export shapes:
- * - Array of strings
- * - Array of objects with a text/content/message field
- * - Array of conversation objects with messages array (Intercom/Zendesk style)
- */
-export function parseJSON(buffer: Buffer): string[] {
-  const text = buffer.toString("utf-8");
-  const data = JSON.parse(text) as unknown;
+import type { ParsedConversation } from '@/types/conversation'
 
-  if (!Array.isArray(data)) {
-    throw new Error("JSON must be an array of conversations");
+export async function parseJSON(file: File): Promise<ParsedConversation[]> {
+  const text = await file.text()
+  const data = JSON.parse(text)
+
+  if (Array.isArray(data)) {
+    return data.map(item => parseJSONItem(item)).filter(Boolean) as ParsedConversation[]
   }
 
-  return data
-    .map((item): string | null => {
-      if (typeof item === "string") return item;
+  if (data.conversations && Array.isArray(data.conversations)) {
+    return data.conversations.map((item: Record<string, unknown>) => parseJSONItem(item)).filter(Boolean) as ParsedConversation[]
+  }
 
-      if (typeof item !== "object" || item === null) return null;
-      const obj = item as Record<string, unknown>;
+  if (data.messages && Array.isArray(data.messages)) {
+    const text = data.messages
+      .map((m: Record<string, string>) => `${m.user || 'Unknown'}: ${m.text || ''}`)
+      .join('\n')
+    return [{ raw_text: text }]
+  }
 
-      // Check for a direct text field
-      for (const key of ["conversation", "transcript", "text", "content", "body", "message"]) {
-        if (typeof obj[key] === "string") return obj[key] as string;
-      }
+  const single = parseJSONItem(data)
+  if (single) return [single]
 
-      // Check for messages array (chat export format)
-      if (Array.isArray(obj.messages)) {
-        const messages = obj.messages as Array<Record<string, unknown>>;
-        return messages
-          .map((m) => {
-            const role = (m.role ?? m.author ?? m.from ?? "").toString();
-            const content = (m.content ?? m.text ?? m.body ?? m.message ?? "").toString();
-            return role ? `${role}: ${content}` : content;
-          })
-          .filter(Boolean)
-          .join("\n");
-      }
+  throw new Error('Could not parse JSON format. Expected an array of conversations or {conversations: [...]}')
+}
 
-      // Last resort: stringify the object
-      return JSON.stringify(obj);
-    })
-    .filter((t): t is string => t !== null && t.trim().length > 0);
+function parseJSONItem(item: Record<string, unknown>): ParsedConversation | null {
+  let rawText = ''
+
+  if (typeof item.conversation === 'string') {
+    rawText = item.conversation
+  } else if (typeof item.text === 'string') {
+    rawText = item.text
+  } else if (typeof item.body === 'string') {
+    rawText = item.body
+  } else if (typeof item.content === 'string') {
+    rawText = item.content
+  } else if (typeof item.transcript === 'string') {
+    rawText = item.transcript
+  } else if (Array.isArray(item.messages)) {
+    rawText = (item.messages as Record<string, string>[])
+      .map(m => {
+        const role = m.role || m.from || m.sender || m.user || 'Unknown'
+        const content = m.content || m.text || m.body || m.message || ''
+        return `${role}: ${content}`
+      })
+      .join('\n')
+  }
+
+  if (!rawText || rawText.trim().length < 10) return null
+
+  return {
+    raw_text: rawText.trim(),
+    external_id: (item.id || item.conversation_id || item.ticket_id || '') as string || undefined,
+    conversation_date: (item.date || item.created_at || item.timestamp || '') as string || undefined,
+  }
 }

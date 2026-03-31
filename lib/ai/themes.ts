@@ -1,63 +1,61 @@
-import { getOpenAI, CHAT_MODEL } from "./openai";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { openai } from './openai'
 
-interface ThemeResult {
-  label: string;
-  description: string;
-  severity: "low" | "medium" | "high" | "critical";
-  trend: "rising" | "stable" | "falling";
-  example_ids: string[];
-  count: number;
+export interface ExtractedTheme {
+  name: string
+  count: number
+  description: string
+  severity: 'critical' | 'moderate' | 'low'
+  sample_summaries: string[]
 }
 
-const SYSTEM_PROMPT = `You are an analyst identifying recurring themes in customer support conversations.
-Given a list of conversation summaries, extract up to 8 meaningful themes.
-For each theme include:
-- label: short title (3-5 words)
-- description: one sentence explaining the theme
-- severity: "low" | "medium" | "high" | "critical" based on user impact
-- trend: "rising" | "stable" | "falling" (use "stable" if unknown)
-
-Respond with JSON only: {"themes": [...]}`;
-
 export async function extractThemes(
-  userId: string,
-  limit = 200
-): Promise<ThemeResult[]> {
-  const admin = createAdminClient();
+  summaries: { summary: string; category: string; sentiment: string }[]
+): Promise<ExtractedTheme[]> {
+  const summaryList = summaries
+    .map((s, i) => `${i + 1}. [${s.category}] [${s.sentiment}] ${s.summary}`)
+    .join('\n')
 
-  const { data: conversations } = await admin
-    .from("conversations")
-    .select("id, summary, category")
-    .eq("user_id", userId)
-    .not("summary", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (!conversations || conversations.length === 0) return [];
-
-  const summaryText = conversations
-    .map((c, i) => `${i + 1}. [${c.category ?? "general"}] ${c.summary}`)
-    .join("\n");
-
-  const openai = getOpenAI();
-  const completion = await openai.chat.completions.create({
-    model: CHAT_MODEL,
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    temperature: 0,
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: summaryText.slice(0, 12000) },
+      {
+        role: 'system',
+        content: `You analyze batches of customer conversation summaries to identify recurring themes and patterns.
+
+Given the summaries below, identify 5-10 distinct recurring themes.
+
+Return ONLY valid JSON, no markdown, no backticks:
+{
+  "themes": [
+    {
+      "name": "short name (3-6 words)",
+      "count": number_of_conversations_related,
+      "description": "one sentence explaining the pattern",
+      "severity": "critical" | "moderate" | "low",
+      "sample_summaries": ["summary1", "summary2", "summary3"]
+    }
+  ]
+}
+
+Severity guide:
+- critical: affects core functionality, many users impacted, or churn risk
+- moderate: notable issue but workarounds exist
+- low: minor inconvenience or nice-to-have request`,
+      },
+      {
+        role: 'user',
+        content: `Here are ${summaries.length} conversation summaries:\n\n${summaryList}`,
+      },
     ],
-    response_format: { type: "json_object" },
-    max_tokens: 1500,
-    temperature: 0.3,
-  });
+    max_tokens: 2000,
+  })
 
-  const raw = completion.choices[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(raw) as { themes?: Array<Omit<ThemeResult, "example_ids" | "count">> };
-
-  return (parsed.themes ?? []).map((t) => ({
-    ...t,
-    example_ids: [],
-    count: 0,
-  }));
+  try {
+    const raw = response.choices[0]?.message?.content?.trim() || ''
+    const parsed = JSON.parse(raw)
+    return parsed.themes || []
+  } catch {
+    return []
+  }
 }

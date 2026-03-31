@@ -14,9 +14,9 @@ export async function GET(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const counts = { positive: 0, negative: 0, neutral: 0, total: data.length };
+  const counts: Record<string, number> = { positive: 0, negative: 0, neutral: 0, total: data.length };
   for (const row of data) {
-    if (row.sentiment) counts[row.sentiment]++;
+    if (row.sentiment) counts[row.sentiment as string]++;
   }
 
   return NextResponse.json(counts);

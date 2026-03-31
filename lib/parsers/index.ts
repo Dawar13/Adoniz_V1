@@ -1,45 +1,33 @@
-import type { SourceType } from "@/types/database";
-import { parseCSV } from "./csv";
-import { parseJSON } from "./json";
-import { parseText } from "./text";
-import { parsePDF } from "./pdf";
+import type { ParsedConversation } from '@/types/conversation'
+import { parseCSV } from './csv'
+import { parseJSON } from './json'
+import { parseText } from './text'
+import { parsePDF } from './pdf'
 
-/**
- * Dispatches to the correct parser based on filename extension or declared source type.
- * Returns an array of conversation strings ready for insertion.
- */
 export async function parseFile(
-  buffer: Buffer,
-  filename: string,
-  source: SourceType
-): Promise<string[]> {
-  const ext = filename.split(".").pop()?.toLowerCase() ?? "";
+  file: File | null,
+  rawText: string | null
+): Promise<ParsedConversation[]> {
+  if (rawText && rawText.trim().length > 0) {
+    return parseText(rawText)
+  }
 
-  if (ext === "pdf") return parsePDF(buffer);
-  if (ext === "json") return parseJSON(buffer);
-  if (ext === "txt" || ext === "text") return parseText(buffer);
-  if (ext === "csv") return parseCSV(buffer);
+  if (!file) {
+    throw new Error('No file or text provided')
+  }
 
-  // Fallback based on declared source type
-  switch (source) {
-    case "csv":
-      return parseCSV(buffer);
-    case "json":
-      return parseJSON(buffer);
-    case "pdf":
-      return parsePDF(buffer);
-    case "text":
-      return parseText(buffer);
+  const ext = file.name.split('.').pop()?.toLowerCase()
+
+  switch (ext) {
+    case 'csv':
+      return parseCSV(file)
+    case 'json':
+      return parseJSON(file)
+    case 'txt':
+      return parseText(await file.text())
+    case 'pdf':
+      return parsePDF(file)
     default:
-      // For platform exports (intercom, zendesk, etc.), try JSON first then CSV
-      try {
-        return parseJSON(buffer);
-      } catch {
-        try {
-          return parseCSV(buffer);
-        } catch {
-          return parseText(buffer);
-        }
-      }
+      throw new Error(`Unsupported file type: .${ext}`)
   }
 }

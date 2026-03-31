@@ -1,47 +1,46 @@
-import { getOpenAI, CHAT_MODEL } from "./openai";
-import type { CategoryLabel } from "@/types/database";
+import { openai } from './openai'
+import type { Category } from '@/types/conversation'
 
-const CATEGORIES: CategoryLabel[] = [
-  "error_bug",
-  "feature_request",
-  "escalation",
-  "billing",
-  "onboarding",
-  "praise",
-  "general",
-  "other",
-];
+interface CategoryResult {
+  category: Category
+  confidence: number
+}
 
-const SYSTEM_PROMPT = `You are a customer support conversation classifier.
-Classify the conversation into exactly one category from this list:
-- error_bug: Technical errors, crashes, bugs, broken features
-- feature_request: Requests for new features or improvements
-- escalation: Angry customers, threats to cancel, urgent issues requiring manager
-- billing: Payment issues, refund requests, subscription questions
-- onboarding: Setup help, getting started, initial configuration
-- praise: Positive feedback, compliments, thanks
-- general: General questions, how-to requests
-- other: Doesn't fit any above category
-
-Respond with JSON only: {"category": "<category>"}`;
-
-export async function categorize(text: string): Promise<CategoryLabel> {
-  const openai = getOpenAI();
-
-  const completion = await openai.chat.completions.create({
-    model: CHAT_MODEL,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: text.slice(0, 4000) },
-    ],
-    response_format: { type: "json_object" },
-    max_tokens: 32,
+export async function categorizeConversation(text: string): Promise<CategoryResult> {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
     temperature: 0,
-  });
+    messages: [
+      {
+        role: 'system',
+        content: `Categorize this customer support conversation into exactly ONE category.
 
-  const raw = completion.choices[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(raw) as { category?: string };
-  const cat = parsed.category as CategoryLabel;
+Categories:
+- bug: Something is broken, erroring, or not working as expected
+- feature_request: Customer asks for new functionality or improvements
+- escalation: Customer is very upset, demands manager, threatens to leave
+- billing: Questions or issues about charges, invoices, subscriptions, pricing
+- onboarding: New customer needs help setting up or getting started
+- general: General questions, how-to, usage guidance
+- praise: Customer expressing satisfaction, thanks, positive feedback
+- churn_signal: Customer mentions canceling, leaving, switching to competitor
 
-  return CATEGORIES.includes(cat) ? cat : "other";
+Return ONLY valid JSON, no markdown, no backticks:
+{"category": "one_of_above", "confidence": 0.0-1.0}`,
+      },
+      { role: 'user', content: text },
+    ],
+    max_tokens: 100,
+  })
+
+  try {
+    const raw = response.choices[0]?.message?.content?.trim() || ''
+    const parsed = JSON.parse(raw)
+    return {
+      category: parsed.category as Category,
+      confidence: Math.max(0, Math.min(1, parsed.confidence)),
+    }
+  } catch {
+    return { category: 'general', confidence: 0.5 }
+  }
 }

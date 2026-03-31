@@ -1,38 +1,40 @@
-import { getOpenAI, CHAT_MODEL } from "./openai";
-import type { SentimentLabel } from "@/types/database";
+import { openai } from './openai'
+import type { Sentiment } from '@/types/conversation'
 
 interface SentimentResult {
-  label: SentimentLabel;
-  score: number; // 0-1 confidence
+  sentiment: Sentiment
+  score: number
 }
 
-const SYSTEM_PROMPT = `You are a sentiment classifier for customer support conversations.
-Classify the conversation as exactly one of: positive, negative, neutral.
-Respond with JSON only: {"label": "positive"|"negative"|"neutral", "score": 0.0-1.0}
-The score is your confidence in the label.`;
-
 export async function analyzeSentiment(text: string): Promise<SentimentResult> {
-  const openai = getOpenAI();
-
-  const completion = await openai.chat.completions.create({
-    model: CHAT_MODEL,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: text.slice(0, 4000) },
-    ],
-    response_format: { type: "json_object" },
-    max_tokens: 64,
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
     temperature: 0,
-  });
+    messages: [
+      {
+        role: 'system',
+        content: `You analyze customer support conversations for sentiment.
+Classify the CUSTOMER's overall sentiment (not the agent's).
+Consider the entire conversation arc — a frustrated customer who gets help and ends satisfied is "positive".
 
-  const raw = completion.choices[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(raw) as Partial<SentimentResult>;
+Return ONLY valid JSON, no markdown, no backticks:
+{"sentiment": "positive" | "neutral" | "negative", "score": 0.0-1.0}
 
-  const label = (["positive", "negative", "neutral"] as SentimentLabel[]).includes(
-    parsed.label as SentimentLabel
-  )
-    ? (parsed.label as SentimentLabel)
-    : "neutral";
+Score guide: 1.0 = extremely positive, 0.5 = perfectly neutral, 0.0 = extremely negative.`,
+      },
+      { role: 'user', content: text },
+    ],
+    max_tokens: 100,
+  })
 
-  return { label, score: Math.min(1, Math.max(0, parsed.score ?? 0.5)) };
+  try {
+    const raw = response.choices[0]?.message?.content?.trim() || ''
+    const parsed = JSON.parse(raw)
+    return {
+      sentiment: parsed.sentiment as Sentiment,
+      score: Math.max(0, Math.min(1, parsed.score)),
+    }
+  } catch {
+    return { sentiment: 'neutral', score: 0.5 }
+  }
 }

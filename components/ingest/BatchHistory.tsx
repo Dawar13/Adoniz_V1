@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import type { Batch } from "@/types/conversation";
+import type { BatchRow } from "@/types/conversation";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -14,7 +14,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 export function BatchHistory() {
   // TODO: Add batches API endpoint
-  const { data } = useSWR<{ data: Batch[] }>("/api/ingest/batches", fetcher);
+  const { data } = useSWR<{ data: BatchRow[] }>("/api/ingest/batches", fetcher);
   const batches = data?.data ?? [];
 
   if (batches.length === 0) return null;
@@ -30,7 +30,7 @@ export function BatchHistory() {
             style={{ borderBottom: i < batches.length - 1 ? "1px solid var(--adoniz-distant-cloud)" : "none", background: "#fff" }}>
             <div>
               <p style={{ fontFamily: "var(--font-sans)", fontSize: "13px", fontWeight: 600, color: "var(--adoniz-pine)" }}>
-                {batch.filename ?? batch.source}
+                {batch.file_name ?? batch.source}
               </p>
               <p style={{ fontFamily: "var(--font-sans)", fontSize: "11px", color: "rgba(0,0,0,0.4)" }}>
                 {batch.total_conversations} conversations · {new Date(batch.created_at).toLocaleDateString()}

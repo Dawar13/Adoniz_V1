@@ -1,18 +1,17 @@
-import pdfParse from "pdf-parse";
+import type { ParsedConversation } from '@/types/conversation'
 
-/**
- * Extracts text from a PDF buffer and splits into conversations.
- * Uses blank-line separation after extracting raw text.
- */
-export async function parsePDF(buffer: Buffer): Promise<string[]> {
-  const data = await pdfParse(buffer);
-  const rawText = data.text ?? "";
+export async function parsePDF(file: File): Promise<ParsedConversation[]> {
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
 
-  // Split on double newlines
-  const chunks = rawText
-    .split(/\n{2,}/)
-    .map((chunk) => chunk.replace(/\s+/g, " ").trim())
-    .filter((chunk) => chunk.length > 20); // Filter out short fragments
+  const pdfParse = (await import('pdf-parse')).default
+  const result = await pdfParse(buffer)
 
-  return chunks.length > 0 ? chunks : [rawText.trim()];
+  const text = result.text.trim()
+  if (text.length < 10) {
+    throw new Error('PDF contains no readable text')
+  }
+
+  const { parseText } = await import('./text')
+  return parseText(text)
 }

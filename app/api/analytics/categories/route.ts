@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     if (!row.category) continue;
     const entry = map.get(row.category) ?? { count: 0, positive: 0, negative: 0, neutral: 0 };
     entry.count++;
-    if (row.sentiment) entry[row.sentiment]++;
+    if (row.sentiment) (entry as Record<string, number>)[row.sentiment as string]++;
     map.set(row.category, entry);
   }
 

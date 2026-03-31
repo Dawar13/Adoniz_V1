@@ -1,67 +1,62 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { parseFile } from "@/lib/parsers";
-import { createAdminClient } from "@/lib/supabase/admin";
-import type { SourceType } from "@/types/database";
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { parseFile } from '@/lib/parsers'
+import type { Source } from '@/types/conversation'
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const formData = await request.formData();
-  const file = formData.get("file") as File | null;
-  const source = (formData.get("source") as SourceType) ?? "csv";
-  const tags = JSON.parse((formData.get("tags") as string) ?? "[]");
-  const dateFrom = formData.get("date_from") as string | null;
-  const dateTo = formData.get("date_to") as string | null;
+  const formData = await request.formData()
+  const file = formData.get('file') as File | null
+  const text = formData.get('text') as string | null
+  const source = (formData.get('source') as Source) ?? 'other'
 
-  if (!file) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
-  }
+  try {
+    const conversations = await parseFile(file, text)
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const conversations = await parseFile(buffer, file.name, source);
+    const admin = createAdminClient()
 
-  const admin = createAdminClient();
+    const { data: batch, error: batchError } = await admin
+      .from('ingestion_batches')
+      .insert({
+        user_id: user.id,
+        source,
+        file_name: file?.name ?? null,
+        status: 'parsing',
+        total_conversations: conversations.length,
+        metadata: {},
+      })
+      .select()
+      .single()
 
-  // Create batch record
-  const { data: batch, error: batchError } = await admin
-    .from("batches")
-    .insert({
+    if (batchError || !batch) {
+      return NextResponse.json({ error: 'Failed to create batch' }, { status: 500 })
+    }
+
+    const rows = conversations.map(conv => ({
       user_id: user.id,
+      batch_id: batch.id,
       source,
-      filename: file.name,
-      status: "pending",
-      tags,
-      date_from: dateFrom,
-      date_to: dateTo,
-    })
-    .select()
-    .single();
+      raw_text: conv.raw_text,
+      external_id: conv.external_id ?? null,
+      conversation_date: conv.conversation_date ?? null,
+      participants: conv.participants ?? [],
+      pipeline_status: 'raw',
+    }))
 
-  if (batchError || !batch) {
-    return NextResponse.json({ error: "Failed to create batch" }, { status: 500 });
+    const { error: insertError } = await admin.from('conversations').insert(rows)
+    if (insertError) {
+      return NextResponse.json({ error: 'Failed to insert conversations' }, { status: 500 })
+    }
+
+    return NextResponse.json({ batchId: batch.id, conversationCount: conversations.length })
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Failed to parse file' },
+      { status: 400 }
+    )
   }
-
-  // Insert raw conversations
-  const rows = conversations.map((text) => ({
-    user_id: user.id,
-    batch_id: batch.id,
-    raw_text: text,
-    source,
-  }));
-
-  const { error: insertError } = await admin.from("conversations").insert(rows);
-  if (insertError) {
-    return NextResponse.json({ error: "Failed to insert conversations" }, { status: 500 });
-  }
-
-  // Update batch totals
-  await admin
-    .from("batches")
-    .update({ total_conversations: rows.length })
-    .eq("id", batch.id);
-
-  return NextResponse.json({ batch_id: batch.id, count: rows.length });
 }

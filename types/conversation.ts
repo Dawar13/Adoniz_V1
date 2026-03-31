@@ -1,55 +1,69 @@
-import type { SourceType, SentimentLabel, CategoryLabel } from "./database";
+export type Source = 'intercom' | 'slack' | 'email' | 'call_transcript' | 'mixpanel' | 'other'
 
-export interface Conversation {
-  id: string;
-  user_id: string;
-  batch_id: string | null;
-  raw_text: string;
-  sanitized_text: string | null;
-  summary: string | null;
-  sentiment: SentimentLabel | null;
-  sentiment_score: number | null;
-  category: CategoryLabel | null;
-  tags: string[];
-  source: SourceType | null;
-  external_id: string | null;
-  customer_identifier: string | null;
-  occurred_at: string | null;
-  created_at: string;
-  updated_at: string;
+export type Sentiment = 'positive' | 'neutral' | 'negative'
+
+export type Category =
+  | 'bug'
+  | 'feature_request'
+  | 'escalation'
+  | 'billing'
+  | 'onboarding'
+  | 'general'
+  | 'praise'
+  | 'churn_signal'
+
+export type PipelineStatus = 'raw' | 'sanitized' | 'analyzed' | 'embedded' | 'complete' | 'failed'
+
+export type BatchStatus =
+  | 'uploading'
+  | 'parsing'
+  | 'sanitizing'
+  | 'analyzing'
+  | 'embedding'
+  | 'extracting_themes'
+  | 'completed'
+  | 'failed'
+
+export interface ParsedConversation {
+  raw_text: string
+  external_id?: string
+  participants?: { role: string; name: string }[]
+  conversation_date?: string
 }
 
-export interface ConversationFilters {
-  sentiment?: SentimentLabel[];
-  category?: CategoryLabel[];
-  source?: SourceType[];
-  tags?: string[];
-  dateFrom?: string;
-  dateTo?: string;
-  search?: string;
-  batchId?: string;
+export interface ConversationRow {
+  id: string
+  user_id: string
+  batch_id: string
+  source: Source
+  external_id?: string
+  raw_text: string
+  sanitized_text?: string
+  participants: { role: string; name: string }[]
+  conversation_date?: string
+  word_count?: number
+  sentiment?: Sentiment
+  sentiment_score?: number
+  category?: Category
+  category_confidence?: number
+  summary?: string
+  themes: string[]
+  pipeline_status: PipelineStatus
+  pipeline_error?: string
+  created_at: string
+  updated_at: string
 }
 
-export interface PaginatedConversations {
-  data: Conversation[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
-
-export interface Batch {
-  id: string;
-  user_id: string;
-  source: SourceType;
-  filename: string | null;
-  status: "pending" | "processing" | "done" | "error";
-  total_conversations: number;
-  processed_conversations: number;
-  error_message: string | null;
-  tags: string[];
-  date_from: string | null;
-  date_to: string | null;
-  created_at: string;
-  updated_at: string;
+export interface BatchRow {
+  id: string
+  user_id: string
+  source: Source
+  file_name?: string
+  status: BatchStatus
+  total_conversations: number
+  processed_count: number
+  error_message?: string
+  metadata: Record<string, unknown>
+  created_at: string
+  completed_at?: string
 }

@@ -1,78 +1,166 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { LayoutDashboard, Upload, MessageSquare, Sparkles, Settings, X, LogOut } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
-  { label: "Dashboard",      href: "/dashboard",     icon: "▦" },
-  { label: "Conversations",  href: "/conversations",  icon: "☰" },
-  { label: "Ingest Data",    href: "/ingest",         icon: "↑" },
-  { label: "Ask Adoniz",     href: "/chat",           icon: "✦" },
-  { label: "Settings",       href: "/settings",       icon: "⚙" },
+  { label: "Dashboard",     href: "/dashboard",     icon: LayoutDashboard },
+  { label: "Ingest Data",   href: "/ingest",         icon: Upload },
+  { label: "Conversations", href: "/conversations",  icon: MessageSquare },
+  { label: "Ask ADONIZ",    href: "/chat",           icon: Sparkles },
+  { label: "Settings",      href: "/settings",       icon: Settings },
 ];
 
-export function AppSidebar() {
+function SidebarContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
-    <aside
-      className="hidden lg:flex flex-col flex-shrink-0 h-full"
-      style={{ width: "220px", background: "var(--adoniz-pine)", borderRight: "1px solid rgba(255,255,255,0.07)" }}
+    <div
+      className="flex flex-col h-full"
+      style={{ background: "var(--app-sidebar-bg, #003D31)", padding: "20px" }}
     >
-      {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 py-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-        <Image src="/logos/adoniz-logo.svg" alt="Adoniz" width={22} height={21}
-          style={{ filter: "invert(1) brightness(2)", opacity: 0.9 }} />
-        <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "17px", color: "#fff", letterSpacing: "-0.02em" }}>
-          Adoniz
-        </span>
+      {/* Logo + close button (mobile) */}
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <span
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "22px",
+              color: "#F0FF3D",
+              display: "block",
+            }}
+          >
+            ADONIZ
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "11px",
+              color: "rgba(255,255,255,0.5)",
+              display: "block",
+              marginTop: "2px",
+            }}
+          >
+            Voice of Customer Intelligence
+          </span>
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "rgba(255,255,255,0.6)" }}
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 flex flex-col gap-0.5 p-3 pt-4">
+      {/* Navigation */}
+      <nav className="flex flex-col gap-1 flex-1">
         {NAV_ITEMS.map((item) => {
           const active = pathname.startsWith(item.href);
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150"
+              onClick={onClose}
               style={{
-                background: active ? "rgba(209,248,67,0.1)" : "transparent",
-                borderLeft: `2px solid ${active ? "var(--adoniz-electric-lime)" : "transparent"}`,
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                height: "40px",
+                padding: "0 12px",
+                borderRadius: "8px",
                 textDecoration: "none",
+                background: active ? "rgba(240,255,61,0.12)" : "transparent",
+                color: active ? "#F0FF3D" : "rgba(255,255,255,0.7)",
+                fontFamily: "var(--font-sans)",
+                fontSize: "14px",
+                fontWeight: active ? 600 : 500,
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.08)";
+              }}
+              onMouseLeave={(e) => {
+                if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
               }}
             >
-              <span style={{ fontSize: "13px", opacity: active ? 1 : 0.5 }}>{item.icon}</span>
-              <span style={{
-                fontFamily: "var(--font-sans)", fontSize: "13px", fontWeight: active ? 600 : 400,
-                color: active ? "#fff" : "rgba(255,255,255,0.55)",
-              }}>
-                {item.label}
-              </span>
+              <Icon size={18} />
+              {item.label}
             </Link>
           );
         })}
       </nav>
 
       {/* User section */}
-      <div className="p-3 pt-0">
-        <div className="px-3 py-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.05)" }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(209,248,67,0.15)" }}>
-              <span style={{ fontSize: "11px", color: "var(--adoniz-electric-lime)", fontWeight: 700 }}>A</span>
-            </div>
-            <div className="min-w-0">
-              <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, fontFamily: "var(--font-sans)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                My Workspace
-              </p>
-              <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-sans)" }}>Free Plan</p>
-            </div>
-          </div>
-        </div>
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "16px", marginTop: "16px" }}>
+        <button
+          onClick={handleSignOut}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            width: "100%",
+            height: "40px",
+            padding: "0 12px",
+            borderRadius: "8px",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "rgba(255,255,255,0.5)",
+            fontFamily: "var(--font-sans)",
+            fontSize: "13px",
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.5)"; }}
+        >
+          <LogOut size={16} />
+          Sign out
+        </button>
       </div>
-    </aside>
+    </div>
+  );
+}
+
+export function AppSidebar({ mobileOpen, onMobileClose }: { mobileOpen?: boolean; onMobileClose?: () => void }) {
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className="hidden lg:flex flex-col flex-shrink-0"
+        style={{ width: "256px", height: "100vh", position: "sticky", top: 0 }}
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={onMobileClose}
+          />
+          <div
+            className="fixed inset-y-0 left-0 z-50 flex flex-col"
+            style={{ width: "256px" }}
+          >
+            <SidebarContent onClose={onMobileClose} />
+          </div>
+        </>
+      )}
+    </>
   );
 }

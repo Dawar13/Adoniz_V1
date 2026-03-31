@@ -14,7 +14,7 @@ export function SourceCitation({ source: s }: Props) {
       className="w-full text-left rounded-lg px-3 py-2"
       style={{ background: "var(--adoniz-lighthouse)", border: "1px solid var(--adoniz-distant-cloud)", cursor: "pointer" }}>
       <div className="flex items-center gap-2">
-        {s.sentiment && <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: SENTIMENT_COLORS[s.sentiment] ?? "rgba(0,0,0,0.3)" }} />}
+        {s.sentiment && <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: (SENTIMENT_COLORS as Record<string, { dot: string }>)[s.sentiment]?.dot ?? "rgba(0,0,0,0.3)" }} />}
         <span style={{ fontFamily: "var(--font-sans)", fontSize: "11px", color: "rgba(0,0,0,0.5)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {s.summary ?? "Source conversation"}
         </span>

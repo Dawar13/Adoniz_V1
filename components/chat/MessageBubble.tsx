@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChatMessage } from "@/types/chat";
+import type { ChatMessage } from "@/hooks/useChat";
 import { SourceCitation } from "./SourceCitation";
 
 interface Props { message: ChatMessage }

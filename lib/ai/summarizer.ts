@@ -1,22 +1,21 @@
-import { getOpenAI, CHAT_MODEL } from "./openai";
+import { openai } from './openai'
 
-const SYSTEM_PROMPT = `You are a concise summarizer for customer support conversations.
-Write a single sentence (max 20 words) summarizing the key issue or outcome.
-Do not use phrases like "The customer" or "The user". Start with the problem or action.
-Example: "Login fails after password reset due to cached session token."`;
-
-export async function summarize(text: string): Promise<string> {
-  const openai = getOpenAI();
-
-  const completion = await openai.chat.completions.create({
-    model: CHAT_MODEL,
+export async function summarizeConversation(text: string): Promise<string> {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    temperature: 0,
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: text.slice(0, 4000) },
+      {
+        role: 'system',
+        content: `Summarize this customer support conversation in ONE sentence.
+Maximum 20 words. Focus on the core issue, request, or outcome.
+Be specific — not "customer had an issue" but "customer reported checkout widget failing on Safari mobile".
+Return ONLY the summary sentence, nothing else.`,
+      },
+      { role: 'user', content: text },
     ],
-    max_tokens: 80,
-    temperature: 0.2,
-  });
+    max_tokens: 60,
+  })
 
-  return (completion.choices[0]?.message?.content ?? "").trim();
+  return response.choices[0]?.message?.content?.trim() || 'Unable to generate summary'
 }

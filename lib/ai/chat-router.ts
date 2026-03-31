@@ -1,4 +1,4 @@
-import { getOpenAI, CHAT_MODEL } from "./openai";
+import { openai, CHAT_MODEL } from "./openai";
 
 export type QueryType = "rag" | "analytics" | "summary";
 
@@ -11,7 +11,6 @@ Classify the user's question into one of:
 Respond with JSON only: {"type": "rag"|"analytics"|"summary"}`;
 
 export async function routeQuery(query: string): Promise<QueryType> {
-  const openai = getOpenAI();
 
   const completion = await openai.chat.completions.create({
     model: CHAT_MODEL,
